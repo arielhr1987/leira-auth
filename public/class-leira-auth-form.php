@@ -1,5 +1,8 @@
 <?php
 
+require plugin_dir_path( __FILE__ ) . 'class-leira-auth-form-field.php';
+require plugin_dir_path( __FILE__ ) . 'class-leira-auth-element.php';
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -9,70 +12,133 @@
  * @package    Leira_Auth
  * @subpackage Leira_Auth/public
  * @author     Ariel <arielhr1987@gmail.com>
+ * @since      1.0.0
  */
-class Leira_Auth_Form{
-
-	/**
-	 * @var
-	 */
-	public $name;
+class Leira_Auth_Form extends Leira_Auth_Element{
 
 	/**
 	 * @var string
+	 * @since 1.0.0
 	 */
-	public $action = '/';
+	protected $tag = 'form';
 
 	/**
-	 * Fields in the form
+	 * The name of the form that identify it
+	 *
+	 * @var string
+	 * @since 1.0.0
+	 */
+	protected $name;
+
+	/**
+	 * Form element attributes
+	 *
+	 * @var string[]
+	 * @since 1.0.0
+	 */
+	protected $attributes = array(
+		'method' => 'post',
+		'action' => '/'
+	);
+
+	/**
+	 * Errors found while validating the form
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
-	public $fields = array();
+	protected $errors = array();
 
 	/**
+	 * Leira_Auth_Form constructor.
 	 *
+	 * @param string $tag
 	 */
-	public function render() {
+	public function __construct( $tag = 'form' ) {
 
-		$output = '';
+	}
+
+	/**
+	 * Render the form
+	 *
+	 * @return string
+	 * @since 1.0.0
+	 */
+	public function __toString() {
 
 		do_action( 'leira_auth_before_render_form', $this );
 
+		apply_filters( 'leira_auth_form_render', $this );
 
 		do_action( 'leira_auth_after_render_form', $this );
 
-		$output = apply_filters( 'leira_auth_form_output', $output, $this );
+		$output = apply_filters( 'leira_auth_form_output', parent::__toString() );
 
+		return $output;
 	}
 
 	/**
-	 * @param $name
-	 * @param $field
-	 * @param $priority
+	 * @return string
+	 * @since 1.0.0
+	 */
+	public function get_name() {
+		return $this->get_attribute( 'name' );
+	}
+
+	/**
+	 * @param string $name
 	 *
-	 * @return bool
+	 * @return Leira_Auth_Form
+	 * @since 1.0.0
 	 */
-	public function add_field( $name, $field, $priority ) {
-		if ( $field instanceof Leira_Auth_Form_Field ) {
-			//throw exception
-			return false;
-		}
+	public function set_name( $name ) {
+		$this->set_attribute( 'name', $name );
 
-		$this->fields[ $name ] = array(
-			'field'    => $field,
-			'priority' => $priority
-		);
-
-		return true;
+		return $this;
 	}
 
 	/**
-	 * @param $name
+	 * @return string
+	 * @since 1.0.0
 	 */
-	public function remove_field( $name ) {
-		if ( isset( $this->fields[ $name ] ) ) {
-			unset( $this->fields[ $name ] );
+	public function get_action() {
+		return apply_filters( 'leira_auth_form_action', $this->get_attr( 'action' ), $this );
+	}
+
+	/**
+	 * @param string $action
+	 *
+	 * @return Leira_Auth_Form
+	 * @since 1.0.0
+	 */
+	public function set_action( $action ) {
+		$this->set_attribute( 'action', $action );
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 * @since 1.0.0
+	 */
+	public function get_method() {
+		return apply_filters( 'leira_auth_form_method', $this->get_attribute( 'method' ), $this );
+	}
+
+	/**
+	 * @param string $method
+	 *
+	 * @return Leira_Auth_Form
+	 * @since 1.0.0
+	 */
+	public function set_method( $method ) {
+		$method = strtolower( $method );
+		if ( ! in_array( $method, array( 'get', 'post' ) ) ) {
+			$method = 'post';
 		}
+		$this->set_attribute( 'method', $method );
+
+		return $this;
 	}
 
 }

@@ -53,12 +53,90 @@ class Leira_Auth_Public{
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
+		add_filter( 'leira_auth_form_render', function( $form ) {
+			/**
+			 * @var Leira_Auth_Form $form
+			 */
+			$form->set_method( 'get' );
+			$nodes = &$form->get_nodes();
+			//$form->remove(0);
+			//unset($nodes[0]);
+			//unset($form->get_nodes()[0]);
+			$the_node = false;
+			foreach ( $nodes as $n ) {
+				if ( $n->get_name() == 'rememberme' ) {
+					$the_node = $n;
+				}
+			}
+			$form->replace( 't', $the_node );
+			$nodes = $form->get_nodes();
+		} );
+
 	}
 
+	/**
+	 *
+	 */
 	public function add_shortcodes() {
 
 		add_shortcode( 'leira-auth-login', function() {
-			echo 'login';
+			require_once __DIR__ . '/test/class-leira-auth-form.php';
+
+			$form = new Leira_Auth_Form();
+
+			$f = new Leira_Auth_Form_Element( 'form' );
+			$form->appendChild( $f );
+
+			$f->setAttribute( 'action', '/' );
+
+			$div = new Leira_Auth_Form_Element( 'div', 'Hello' );
+			$f->appendChild( $div );
+
+			$nodes = $form->query( 'div' );
+
+			foreach ($nodes as $node){
+				$str = $node->__toString();
+			}
+
+			return $form;
+
+
+			require_once __DIR__ . '/class-leira-auth-form.php';
+			$form = new Leira_Auth_Form();
+
+			$field_username = new Leira_Auth_Form_Field();
+			$field_username->set_id( 'uname_field' )
+			               ->set_name( 'uname' )
+			               ->set_label( 'Username or Email' )
+			               ->set_description( 'Your Username or Email provided at registration' );
+			$form->append( $field_username );
+
+			$field_password = new Leira_Auth_Form_Field();
+			$field_password->set_id( 'password_field' )
+			               ->set_name( 'password' )
+			               ->set_label( 'Password' )
+			               ->set_type( 'password' );
+			$form->append( $field_password );
+
+			$field_remember = new Leira_Auth_Form_Field();
+			$field_remember->set_type( 'checkbox' )
+			               ->set_name( 'rememberme' )
+			               ->set_label( 'Remember me' );
+			$form->append( $field_remember );
+
+			$field_dropdown = new Leira_Auth_Form_Field();
+			$field_dropdown->set_name( 'dd' )
+			               ->set_type( 'dropdown' )
+			               ->set_label( 'Hello' )
+			               ->set_value( 'c' )
+			               ->set_options( array(
+				               'a' => 'A',
+				               'b' => 'B',
+				               'c' => 'C',
+				               'd' => 'D',
+			               ) );
+			$form->append( $field_dropdown );
+			echo $form;
 
 //			function phpinfo_array() {
 //				ob_start();
