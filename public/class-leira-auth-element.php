@@ -28,16 +28,42 @@ class Leira_Auth_Element{
 	 * @var string[]
 	 * @since 1.0.0
 	 */
-	protected $self_closers = array( 'input', 'img', 'hr', 'br', 'meta', 'link' );
+	protected $self_close_tags = array(
+		'area',
+		'base',
+		'br',
+		'col',
+		'command',
+		'embed',
+		'hr',
+		'img',
+		'input',
+		'keygen',
+		'link',
+		'menuitem',
+		'meta',
+		'param',
+		'source',
+		'track',
+		'wbr'
+	);
 
 	/**
-	 * Leira_Auth_Element constructor.
+	 * Self closer attribute elements
 	 *
-	 * @param string $tag
+	 * @var string[]
+	 * @since 1.0.0
 	 */
-	public function __construct( $tag = 'div' ) {
-		$this->set_tag( $tag );
-	}
+	protected $boolean_attrs = array(
+		'selected',
+		'checked',
+		'disabled',
+		'hidden',
+		'readonly',
+		'autofocus',
+		'required',
+		'multiple'
+	);
 
 	/**
 	 * Add class
@@ -115,7 +141,7 @@ class Leira_Auth_Element{
 		}
 
 		if ( is_string( $class ) ) {
-			$regex   = '\b' . trim( $class ) . '\b';
+			$regex   = '/\b' . trim( $class ) . '\b/';
 			$classes = preg_replace( $regex, '', $this->attributes['class'] );//remove the given class
 			$classes = $this->str_unique_words( $classes );
 
@@ -151,9 +177,9 @@ class Leira_Auth_Element{
 	 * @since 1.0.0
 	 */
 	protected function str_unique_words( $str ) {
-		$regex = '(\b[a-zA-Z0-9_-]+\b)(?=.+\1)';
+		$regex = '/(\b[a-zA-Z0-9_-]+\b)(?=.+\1)/';
 		$str   = preg_replace( $regex, '', $str ); //remove al. repeated words
-		$str   = preg_replace( '\s+', ' ', trim( $str ) ); //remove extra spaces
+		$str   = preg_replace( '/\s+/', ' ', trim( $str ) ); //remove extra spaces
 
 		return $str;
 	}
@@ -179,49 +205,81 @@ class Leira_Auth_Element{
 	 * @return string[]
 	 * @since 1.0.0
 	 */
-	public function get_self_closers() {
-		return $this->self_closers;
+	public function get_self_close_tags() {
+		return $this->self_close_tags;
 	}
 
 	/**
-	 * @param string[] $self_closers
+	 * @param string[] $self_close_tags
 	 *
 	 * @since 1.0.0
 	 */
-	public function set_self_closers( $self_closers ) {
-		$this->self_closers = $self_closers;
+	public function set_self_close_tags( $self_close_tags ) {
+		$this->self_close_tags = $self_close_tags;
+	}
+
+	/**
+	 * @return string[]
+	 * @since 1.0.0
+	 */
+	public function get_boolean_attrs() {
+		return $this->boolean_attrs;
+	}
+
+	/**
+	 * @param string[] $boolean_attrs
+	 *
+	 * @since 1.0.0
+	 */
+	public function set_boolean_attrs( $boolean_attrs ) {
+		$this->boolean_attrs = $boolean_attrs;
 	}
 
 	/**
 	 * Convert to string
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
-	public function __toString() {
-		$html = '<' . $this->tag;
+	public function render() {
+		$out = '<' . esc_attr( $this->tag );
 
 		//add attributes
 		if ( count( $this->attributes ) ) {
 			foreach ( $this->attributes as $key => $value ) {
 				if ( $key != 'text' ) {
-					$html .= ' ' . $key . '="' . $value . '"';
+					$out .= ' ' . esc_attr( $key );
+					if ( ! in_array( $key, $this->get_boolean_attrs() ) ) {
+						$out .= '="' . $value . '"';
+					}
 				}
 			}
 		}
 
 		//closing
-		if ( ! in_array( $this->tag, $this->self_closers ) ) {
-			$html .= '>';
+		if ( ! in_array( $this->tag, $this->get_self_close_tags() ) ) {
+			$out .= '>';
 			if ( isset( $this->attributes['text'] ) ) {
-				$html .= $this->attributes['text'];
+				$out .= $this->attributes['text'];
 			}
-			$html .= '</' . $this->tag . '>';
+			$out .= '</' . esc_attr( $this->tag ) . '>';
 		} else {
-			$html .= ' />';
+			$out .= ' />';
 		}
 
-		//return it
-		return $html;
+		$out = apply_filters( 'leira_auth_element_output', $out, $this );
+
+		return $out;
+	}
+
+	/**
+	 * Convert to string
+	 *
+	 * @return string
+	 * @since 1.0.0
+	 */
+	public function __toString() {
+		return $this->render();
 	}
 
 }

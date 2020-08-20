@@ -148,8 +148,7 @@ class Leira_Auth{
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Leira_Auth_i18n class in order to set the domain and to register the hook
-	 * with WordPress.
+	 * Uses the Leira_Auth_i18n class in order to set the domain and to register the hook with WordPress.
 	 *
 	 * @since    1.0.0
 	 * @access   private
@@ -163,8 +162,7 @@ class Leira_Auth{
 	}
 
 	/**
-	 * Register all of the hooks related to the admin area functionality
-	 * of the plugin.
+	 * Register all of the hooks related to the admin area functionality of the plugin.
 	 *
 	 * @since    1.0.0
 	 * @access   private
@@ -181,8 +179,7 @@ class Leira_Auth{
 	}
 
 	/**
-	 * Register all of the hooks related to the public-facing functionality
-	 * of the plugin.
+	 * Register all of the hooks related to the public-facing functionality of the plugin.
 	 *
 	 * @since    1.0.0
 	 * @access   private
@@ -192,11 +189,13 @@ class Leira_Auth{
 		$plugin_public = new Leira_Auth_Public( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->set( 'public', $plugin_public );
 
-		$this->loader->add_action( 'init', $plugin_public, 'add_shortcodes' );
-
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+
+		$this->loader->add_action( 'init', $plugin_public, 'add_shortcodes' );
+
+		$this->loader->add_action( 'template_redirect', $plugin_public, 'submit' );
 
 	}
 

@@ -1,6 +1,6 @@
 <?php
 
-require plugin_dir_path( __FILE__ ) . 'class-leira-auth-dom.php';
+require_once plugin_dir_path( __FILE__ ) . 'class-leira-auth-element.php';
 
 /**
  * The public-facing functionality of the plugin.
@@ -13,75 +13,148 @@ require plugin_dir_path( __FILE__ ) . 'class-leira-auth-dom.php';
  * @author     Ariel <arielhr1987@gmail.com>
  * @since      1.0.0
  */
-class Leira_Auth_Form_Field{
+class Leira_Auth_Form_Field extends Leira_Auth_Element{
 
 	/**
-	 * The id of the input element
+	 * Field tag
 	 *
 	 * @var string
 	 * @since 1.0.0
 	 */
-	protected $id = '';
+	protected $tag = 'input';
 
 	/**
+	 * Field name
+	 *
 	 * @var string
 	 * @since 1.0.0
 	 */
 	protected $name = '';
 
 	/**
+	 * Field value
+	 *
 	 * @var string
 	 * @since 1.0.0
 	 */
 	protected $value = '';
 
 	/**
-	 * @var array
-	 * @since 1.0.0
-	 */
-	protected $options = array();
-
-	/**
+	 * Field label text
+	 *
 	 * @var string
 	 * @since 1.0.0
 	 */
 	protected $label = '';
 
 	/**
+	 * Field description text
+	 *
 	 * @var string
 	 * @since 1.0.0
 	 */
 	protected $description = '';
 
 	/**
+	 * Field error message
+	 *
 	 * @var string
 	 * @since 1.0.0
 	 */
-	protected $type = 'text';
+	protected $error = '';
+
+	/**
+	 * The form this field belongs to
+	 *
+	 * @var null|Leira_Auth_Form
+	 * @since 1.0.0
+	 */
+	protected $form = null;
+
+	/**
+	 * Field priority in the form
+	 *
+	 * @var int
+	 * @since 1.0.0
+	 */
+	protected $priority = 10;
+
+	/**
+	 * Args to build the field
+	 *
+	 * @var string[]
+	 * @since 1.0.0
+	 */
+	protected $args = array(
+		'form_group_start' => '<div class="form-group">',
+		'form_group_end'   => '</div>',
+		'label'            => '<label for="%s">%s</label>',
+		'input'            => '%',
+		'description'      => '<small class="form-text text-muted">%s</small>',
+		'error'            => '<div class="invalid-feedback">%s</div>',
+	);
 
 	/**
 	 * Leira_Auth_Form_Field constructor.
+	 *
+	 * @since 1.0.0
 	 */
 	public function __construct() {
-
+		$this->add_class( 'form-control' );
 	}
 
 	/**
-	 * @return string
-	 */
-	public function get_id() {
-		return $this->id;
-	}
-
-	/**
-	 * @param string $id
+	 * Render field element
 	 *
-	 * @return Leira_Auth_Form_Field
+	 * @return string
+	 * @since 1.0.0
 	 */
-	public function set_id( $id ) {
-		$this->id = $id;
+	public function render() {
 
-		return $this;
+		$out = $this->args['form_group_start'] . PHP_EOL;
+
+		if ( $this->label ) {
+			$out .= sprintf( $this->args['label'], $this->get_attr( 'id', '' ), sanitize_text_field( $this->label ) ) . PHP_EOL;
+		}
+
+		if ( $this->error ) {
+			$this->add_class( 'is-invalid' );
+		}
+		$out .= $this->input() . PHP_EOL;
+
+		if ( $this->description ) {
+			$out .= sprintf( $this->args['description'], sanitize_text_field( $this->description ) ) . PHP_EOL;
+		}
+
+		if ( $this->error ) {
+			$out .= sprintf( $this->args['error'], sanitize_text_field( $this->error ) ) . PHP_EOL;
+		}
+
+		$out .= $this->args['form_group_end'] . PHP_EOL;
+
+		$out = apply_filters( 'leira_auth_form_field_output', $out, $this );
+
+		return $out;
+	}
+
+	/**
+	 * Convert to string the field
+	 *
+	 * @return string
+	 * @since 1.0.0
+	 */
+	public function __toString() {
+		return $this->render();
+	}
+
+	/**
+	 * Render the input element of the field
+	 *
+	 * @return string
+	 * @since 1.0.0
+	 */
+	protected function input() {
+		return Leira_Auth_Element::render();
 	}
 
 	/**
@@ -89,7 +162,7 @@ class Leira_Auth_Form_Field{
 	 * @since 1.0.0
 	 */
 	public function get_name() {
-		return $this->name;
+		return $this->get_attr( 'name', '' );
 	}
 
 	/**
@@ -99,7 +172,7 @@ class Leira_Auth_Form_Field{
 	 * @since 1.0.0
 	 */
 	public function set_name( $name ) {
-		$this->name = $name;
+		$this->set_attr( 'name', $name );
 
 		return $this;
 	}
@@ -109,7 +182,7 @@ class Leira_Auth_Form_Field{
 	 * @since 1.0.0
 	 */
 	public function get_value() {
-		return $this->value;
+		return $this->get_attr( 'value' );
 	}
 
 	/**
@@ -119,27 +192,7 @@ class Leira_Auth_Form_Field{
 	 * @since 1.0.0
 	 */
 	public function set_value( $value ) {
-		$this->value = $value;
-
-		return $this;
-	}
-
-	/**
-	 * @return array
-	 * @since 1.0.0
-	 */
-	public function get_options() {
-		return $this->options;
-	}
-
-	/**
-	 * @param array $options
-	 *
-	 * @return Leira_Auth_Form_Field
-	 * @since 1.0.0
-	 */
-	public function set_options( $options ) {
-		$this->options = $options;
+		$this->set_attr( 'value', $value );
 
 		return $this;
 	}
@@ -186,108 +239,85 @@ class Leira_Auth_Form_Field{
 
 	/**
 	 * @return string
+	 * @since 1.0.0
 	 */
-	public function get_type() {
-		return $this->type;
+	public function get_error() {
+		return $this->error;
 	}
 
 	/**
-	 * @param string $type
+	 * @param string $error
 	 *
 	 * @return Leira_Auth_Form_Field
+	 * @since 1.0.0
 	 */
-	public function set_type( $type ) {
-		$this->type = $type;
+	public function set_error( $error ) {
+		$this->error = $error;
 
 		return $this;
 	}
 
 	/**
-	 * Determine if the current field is valid
-	 *
-	 * @return bool
+	 * @return int
 	 * @since 1.0.0
 	 */
-	public function valid() {
-		return true;
+	public function get_priority() {
+		return $this->priority;
 	}
 
 	/**
-	 * Render the field
+	 * @param int $priority
 	 *
+	 * @return Leira_Auth_Form_Field
 	 * @since 1.0.0
 	 */
-	public function __toString() {
+	public function set_priority( $priority ) {
+		$this->priority = $priority;
 
-		$group = new Leira_Auth_Dom();
-		$group->add_class( 'form-group' );
-
-		$label = new Leira_Auth_Dom( 'label' );
-		$label->set_attribute( 'for', $this->get_id() )
-		      ->append( $this->label );
-
-
-		$input = new Leira_Auth_Dom( 'input' );
-		$input->set_attribute( 'id', $this->get_id() )
-		      ->set_attribute( 'name', $this->get_name() )
-		      ->set_attribute( 'type', $this->get_type() )
-		      ->add_class( 'form-control' );
-
-		switch ( $this->get_type() ) {
-			case 'checkbox':
-				$input->set_attribute( 'value', $this->get_value() );
-				$group->add_class( 'form-checkbox' );
-				$group->append( $input );
-				$group->append( $label );
-				break;
-			case 'textarea':
-				$input->append( $this->get_value() )
-				      ->set_tag( 'textarea' );
-				$group->append( $label );
-				$group->append( $input );
-				break;
-			case 'dropdown':
-				$input->set_tag( 'select' );
-				foreach ( $this->get_options() as $value => $option ) {
-					$option_el = new Leira_Auth_Dom( 'option' );
-					$option_el->set_attribute( 'value', $value )
-					          ->append( $option );
-					if ( $this->get_value() == $value ) {
-						$option_el->set_attribute( 'selected', 'selected' );
-					}
-					$input->append( $option_el );
-				}
-				$group->append( $label );
-				$group->append( $input );
-				break;
-			default;
-				$input->set_attribute( 'value', $this->get_value() );
-				$group->append( $label );
-				$group->append( $input );
-		}
-
-		if ( ! empty( $this->get_description() ) ) {
-			$description = new Leira_Auth_Dom( 'small' );
-			$description->add_class( array(
-				'form-text',
-				'text-muted'
-			) );
-			$description->append( $this->get_description() );
-			$group->append( $description );
-		}
-
-		return $group->__toString();
+		return $this;
 	}
 
 	/**
-	 * @return string
+	 * @return string[]
+	 * @since 1.0.0
 	 */
-	public function render_input() {
+	public function get_args() {
+		return $this->args;
+	}
 
-		$group = new Leira_Auth_Html_Element();
-		$group->add_class( 'form-group' );
+	/**
+	 * @param string[] $args
+	 *
+	 * @return Leira_Auth_Form_Field
+	 * @since 1.0.0
+	 */
+	public function set_args( $args ) {
+		$this->args = $args;
 
-		return '<input type="text" class="form-control" id="" aria-describedby="emailHelp">';
+		return $this;
+	}
+
+	/**
+	 * Get the form this field belongs to
+	 *
+	 * @return Leira_Auth_Form|null
+	 * @since 1.0.0
+	 */
+	public function get_form() {
+		return $this->form;
+	}
+
+	/**
+	 * Set this field form
+	 *
+	 * @param Leira_Auth_Form|null $form
+	 *
+	 * @since 1.0.0
+	 */
+	public function set_form( $form ) {
+		if ( $form instanceof Leira_Auth_Form ) {
+			$this->form = $form;
+		}
 	}
 
 }
