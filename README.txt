@@ -1,7 +1,7 @@
-=== Plugin Name ===
+=== Leira Auth ===
 Contributors: arielhr1987
 Donate link: https://leira.dev
-Tags: login, authentication, template, password, activate, reset password, recover password, recover
+Tags: login, authentication, login
 Requires at least: 4.1
 Tested up to: 5.3.2
 Stable tag: 1.0.0
@@ -19,8 +19,8 @@ Markdown parsed.
 
 A few notes about the sections above:
 
-*   "Contributors" is a comma separated list of wp.org/wp-plugins.org usernames
-*   "Tags" is a comma separated list of tags that apply to the plugin
+*   "Contributors" is a comma-separated list of wp.org/wp-plugins.org usernames
+*   "Tags" is a comma-separated list of tags that apply to the plugin
 *   "Requires at least" is the lowest version that the plugin will work on
 *   "Tested up to" is the highest version that you've *successfully used to test the plugin*. Note that it might work on
 higher versions... this is just the highest one you've verified.

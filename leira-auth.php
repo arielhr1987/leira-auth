@@ -3,8 +3,8 @@
 /**
  * The plugin bootstrap file
  *
- * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
+ * WordPress reads this file to generate the plugin information in the plugin
+ * admin area. This file also includes all the dependencies used by the plugin,
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       Leira Auth
  * Plugin URI:        https://wordpress.org/plugins/leira-auth/
- * Description:       Allow your users to authenticate in your system from the frontend. Customize the look and feel of the frontend login, forgot and reset password forms.
+ * Description:       Allow your users to authenticate in your system from the frontend. Customize the look and feel of the frontend login, forgot, and reset password forms.
  * Version:           1.0.0
  * Author:            Ariel
  * Author URI:        https://leira.dev
@@ -37,42 +37,21 @@ if ( ! defined( 'WPINC' ) ) {
  */
 define( 'LEIRA_AUTH_VERSION', '1.0.0' );
 
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-leira-auth-activator.php
- */
-function activate_leira_auth() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-leira-auth-activator.php';
-	Leira_Auth_Activator::activate();
-}
 
 /**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-leira-auth-deactivator.php
+ * Register the plugin's autoloader
  */
-function deactivate_leira_auth() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-leira-auth-deactivator.php';
-	Leira_Auth_Deactivator::deactivate();
-}
-
-register_activation_hook( __FILE__, 'activate_leira_auth' );
-register_deactivation_hook( __FILE__, 'deactivate_leira_auth' );
-
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/class-leira-auth.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 /**
  * Helper method to get the main instance of the plugin
  *
- * @return Leira_Auth
+ * @return Leira_Auth\Includes\Plugin
  * @since    1.0.0
  * @access   global
  */
 function leira_auth() {
-	return Leira_Auth::instance();
+	return Leira_Auth\Includes\Plugin::instance();
 }
 
 /**
