@@ -4,188 +4,135 @@ namespace Leira_Auth\Public\Forms;
 
 use Leira_Auth\Public\Contracts\Form;
 use Leira_Auth\Public\Fields\Password;
-use Leira_Auth\Public\Forms\Form as Base_Form;
-use Leira_Auth\Public\Messages\Message;
 
 /**
- * A form factory class
+ * Form factory.
  *
  * @since 1.0.0
  */
 class Factory{
 
 	/**
-	 * Registered form types
+	 * Registered form types.
 	 *
 	 * @var array<string, class-string<Form>>
 	 */
 	protected array $registry = [];
 
 	/**
-	 * Class constructor
+	 * Class constructor.
 	 */
 	public function __construct() {
-		/**
-		 * Core forms registration
-		 */
 		$this->register( 'login', Login::class );
-//		$this->register('register', RegisterForm::class);
-//		$this->register('forgot',   ForgotPasswordForm::class);
+//		$this->register( 'register', RegisterForm::class );
+//		$this->register( 'forgot', ForgotPasswordForm::class );
 
-		/**
-		 * Allow plugins to register their own forms
-		 */
 		do_action( 'leira_auth_register_forms', $this );
 	}
 
 	/**
-	 * Register a form type
+	 * Register a form type.
 	 *
-	 * @param  string  $type  The name of the form, the type should match the form name
-	 * @param  string  $formClass  The class name to instantiate the form
+	 * @param  string  $type
+	 * @param  string  $form_class
 	 *
 	 * @return void
 	 */
-	public function register( string $type, string $formClass ): void {
-
-		if ( ! is_subclass_of( $formClass, Form::class ) ) {
+	public function register( string $type, string $form_class ): void {
+		if ( ! is_subclass_of( $form_class, Form::class ) ) {
 			return;
 		}
 
-		$this->registry[ $type ] = $formClass;
+		$this->registry[ $type ] = $form_class;
 	}
 
 	/**
-	 * Get all the registered forms
+	 * Get all registered forms.
 	 *
-	 * @return array
+	 * @return array<string, class-string<Form>>
 	 */
 	public function registry(): array {
 		return $this->registry;
 	}
 
 	/**
-	 * Create a form instance
+	 * Create a form instance.
 	 *
-	 * @param  string  $type  The form time [login, forgot, register...]
-	 * @param  array  $options  The options to configure the form
+	 * @param  string  $type
+	 * @param  array  $options
 	 *
-	 * @return null|Form The form instance
+	 * @return Form|null
 	 */
 	public function create( string $type, array $options = [] ): ?Form {
-
 		if ( ! isset( $this->registry[ $type ] ) ) {
 			return null;
 		}
 
-		$formClass = $this->registry[ $type ];
+		$form_class = $this->registry[ $type ];
 
 		/** @var Form $form */
-		$form = new $formClass();
+		$form = new $form_class();
 
-		/**
-		 * Allow plugins to alter options before configuration
-		 */
 		$options = apply_filters( 'leira_auth_form_options', $options, $type, $form );
+		$form->build( $options );
 
-		if ( method_exists( $form, 'build' ) ) {
-			//make sure "build method" is implemented
-			$form->build( $options );
-		}
-
-		if ( method_exists( $form, 'load_flash' ) ) {
-			//$form->load_flash( [] );
-			//load previous data
-		}
-
-		/**
-		 * Allow plugins to modify the built form
-		 */
 		do_action( 'leira_auth_form_built', $form, $type );
 
 		return $form;
 	}
 
 	/**
-	 * Restore previous submitted form values
+	 * Restore previously submitted form values from flash.
 	 *
-	 * @param  Form  $form  Teh form to restore
+	 * @param  Form  $form
 	 *
 	 * @return void
 	 */
 	public function restore( Form $form ): void {
-
-		$data = leira_auth()->flash->get( 'leira-auth' );
-
-		//messages
-		$messages = $data['messages'] ?? [];
-		foreach ( $messages as $message ) {
-			$text = $message['text'] ?? '';
-			$type = $message['type'] ?? Message::ERROR;
-			$form->messages()->add( $text, $type );
+		$flash = leira_auth()->flash;
+		if ( ! $flash ) {
+			return;
 		}
 
-		//fields
-		$fields = $data['fields'] ?? [];
-		foreach ( $fields as $name => $field ) {
-			$field = $form->get_field( $name );
-			if ( ! $field ) {
-				continue;
-			}
-			//value
-			$value = $field['value'] ?? null;
-			$field->set_value( $value );
-
-			$messages = $field['messages'] ?? [];
-			foreach ( $messages as $message ) {
-				$text = $message['text'] ?? '';
-				$type = $message['type'] ?? Message::ERROR;
-				$field->messages()->add( $text, $type );
-			}
+		$data = $flash->get( 'leira-auth', [] );
+		if ( ! is_array( $data ) ) {
+			return;
 		}
+
+		$form->restore( $data );
 	}
 
 	/**
-	 * Persist a submitted form
+	 * Persist submitted form state into flash.
 	 *
-	 * @param  Form  $form  The form to persist
+	 * @param  Form  $form
 	 *
 	 * @return void
 	 */
 	public function persist( Form $form ): void {
-		$data = [
-			'messages' => [],
-			'fields'   => [],
-		];
-
-		//messages
-		foreach ( $form->messages()->all() as $message ) {
-			$data['messages'][] = [
-				'text' => $message->text(),
-				'type' => $message->type(),
-			];
+		$flash = leira_auth()->flash;
+		if ( ! $flash ) {
+			return;
 		}
 
-		//fields
-		$fields = array_filter( $form->fields(), function ( $field ) {
-			//Only persist fields
-			//TODO: do not persist sensitive fields
-			return ! $field instanceof Password;
-		} );
-		foreach ( $fields as $field ) {
-			$data['fields'][ $field->name() ] = [
-				'value'    => $field->value(),
-				'messages' => array_map( function ( $message ) {
-					return [
-						'text' => $message->text(),
-						'type' => $message->type(),
-					];
-				}, $field->messages()->all() ),
-			];
+		$data = $form->state();
+		if ( ! is_array( $data ) ) {
+			return;
 		}
 
-		//flash data
-		leira_auth()->flash->add( 'leira-auth', $data );
+		$fields_state = $data['fields'] ?? [];
+		if ( ! is_array( $fields_state ) ) {
+			$fields_state = [];
+		}
+
+		// Do not persist sensitive fields.
+		foreach ( $form->fields() as $field ) {
+			if ( $field instanceof Password ) {
+				unset( $fields_state[ $field->get_name() ] );
+			}
+		}
+		$data['fields'] = $fields_state;
+
+		$flash->add( 'leira-auth', $data );
 	}
 }
-

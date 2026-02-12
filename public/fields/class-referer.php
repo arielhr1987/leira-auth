@@ -27,9 +27,9 @@ class Referer extends Field{
 	 *
 	 * @param  mixed  $value
 	 *
-	 * @return Field
+	 * @return self
 	 */
-	public function set_value( mixed $value ): Field {
+	public function set_value( mixed $value ): self {
 		//Value is calculated dynamically
 		return $this;
 	}

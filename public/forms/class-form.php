@@ -4,40 +4,48 @@ namespace Leira_Auth\Public\Forms;
 
 use Leira_Auth\Public\Contracts\Field;
 use Leira_Auth\Public\Contracts\Form as FormInterface;
-use Leira_Auth\Public\Contracts\Stateful;
-use Leira_Auth\Public\Contracts\Validatable;
 use Leira_Auth\Public\Messages\Bag;
+use Leira_Auth\Public\Messages\Message;
 
 /**
- * The form class to handle submissions
+ * Base form implementation.
  *
  * @since 1.0.0
  */
-class Form implements FormInterface, Validatable, Stateful{
+class Form implements FormInterface{
 
 	/**
-	 * @var string The form name
+	 * Form name.
+	 *
+	 * @var string
 	 */
 	protected string $name;
 
 	/**
-	 * The fields in the form
+	 * Ordered list of form fields.
 	 *
 	 * @var Field[]
 	 */
 	protected array $fields = [];
 
 	/**
-	 * The form messages
+	 * Form-level messages.
 	 *
 	 * @var Bag
 	 */
 	protected Bag $messages;
 
 	/**
-	 * Class constructor
+	 * Default submit button label.
 	 *
-	 * @param  string  $name  The name of the field
+	 * @var string
+	 */
+	protected string $submit_label = 'Submit';
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param  string  $name  Form name.
 	 */
 	public function __construct( string $name ) {
 		$this->name     = $name;
@@ -45,9 +53,33 @@ class Form implements FormInterface, Validatable, Stateful{
 	}
 
 	/**
-	 * Add the field to the form
+	 * Get the form name.
 	 *
-	 * @param  Field  $field  The field to add to the form
+	 * @return string
+	 */
+	public function name(): string {
+		return $this->name;
+	}
+
+	/**
+	 * Set submit button label.
+	 *
+	 * @param  string  $label
+	 *
+	 * @return self
+	 */
+	public function set_submit_label( string $label ): self {
+		if ( '' !== trim( $label ) ) {
+			$this->submit_label = $label;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Add field to the form.
+	 *
+	 * @param  Field  $field
 	 *
 	 * @return $this
 	 */
@@ -59,20 +91,20 @@ class Form implements FormInterface, Validatable, Stateful{
 	}
 
 	/**
-	 * Get a field given its name
+	 * Get field by name.
 	 *
-	 * @param  string  $name  The name of the field to get
+	 * @param  string  $name
 	 *
-	 * @return Field|null The field object or null if it does not exist
+	 * @return Field|null
 	 */
 	public function get_field( string $name ): ?Field {
 		return $this->fields[ $name ] ?? null;
 	}
 
 	/**
-	 * Remove a field from the form
+	 * Remove field by name.
 	 *
-	 * @param  string  $name  The name of the field to remove
+	 * @param  string  $name
 	 *
 	 * @return $this
 	 */
@@ -85,9 +117,6 @@ class Form implements FormInterface, Validatable, Stateful{
 	/**
 	 * Remove all fields from the form.
 	 *
-	 * This method clears the internal field collection, effectively resetting
-	 * the form structure. It does not affect form messages or state.
-	 *
 	 * @return self
 	 */
 	public function empty_fields(): self {
@@ -97,7 +126,7 @@ class Form implements FormInterface, Validatable, Stateful{
 	}
 
 	/**
-	 * Get the fields in the form
+	 * Get form fields.
 	 *
 	 * @return Field[]
 	 */
@@ -106,8 +135,9 @@ class Form implements FormInterface, Validatable, Stateful{
 	}
 
 	/**
-	 * Get the submitted data
-	 * @return array The submitted form data
+	 * Get submitted data from current field values.
+	 *
+	 * @return array
 	 */
 	public function data(): array {
 		$data = [];
@@ -119,14 +149,15 @@ class Form implements FormInterface, Validatable, Stateful{
 	}
 
 	/**
-	 * Validate the form
+	 * Validate the form fields against incoming data.
 	 *
-	 * @param  mixed  $data  The data to validate
+	 * @param  mixed  $data
 	 *
 	 * @return bool
 	 */
-	public function validate( mixed $data ): bool {
-		//todo: improve data validation
+	public function validate( mixed $data = null ): bool {
+		$data = is_array( $data ) ? $data : [];
+
 		$valid = true;
 		foreach ( $this->fields() as $name => $field ) {
 			$value = $data[ $name ] ?? null;
@@ -135,74 +166,74 @@ class Form implements FormInterface, Validatable, Stateful{
 			}
 		}
 
+		if ( ! $valid ) {
+			$this->append_non_inline_field_messages();
+		}
+
 		return $valid;
 	}
 
 	/**
-	 * Get the list of errors
-	 * These are form level error, not field errors
+	 * Get form-level messages.
 	 *
-	 * @return Bag The errors
+	 * @return Bag
 	 */
 	public function messages(): Bag {
 		return $this->messages;
 	}
 
 	/**
-	 * Handle the form
+	 * Handle form POST request.
 	 *
 	 * @return bool
 	 */
 	public function handle(): bool {
-		//Bail if not a POST submission
-		if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
+		$this->messages()->clear();
+
+		$method = strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' );
+		if ( 'POST' !== $method ) {
 			return false;
 		}
 
-		//Bail if invalid
-		if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', $this->name ) ) {
-			$this->messages()->add( __( 'Invalid form submission.', 'leira-auth' ) );
+		if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', $this->name() ) ) {
+			$this->messages()->add( __( 'Invalid form submission.', 'leira-auth' ), Message::ERROR );
 
 			return false;
 		}
 
-		$valid = true;
-
-		foreach ( $this->fields as $name => $field ) {
-			$value = $_POST[ $name ] ?? null;
-
-			if ( ! $field->validate( $value ) ) {
-				$valid = false;
-			}
-		}
+		$data  = is_array( $_POST ) ? wp_unslash( $_POST ) : [];
+		$valid = $this->validate( $data );
 
 		if ( ! $valid ) {
-			$this->messages()->add( __( 'Please fix the errors below.', 'leira-auth' ) );
+			$this->messages()->add( __( 'Please fix the errors below.', 'leira-auth' ), Message::ERROR );
 		}
 
 		return $valid;
 	}
 
 	/**
-	 * Render the form
+	 * Render form markup.
 	 *
-	 * @return string The form HTML
+	 * @return string
 	 */
 	public function render(): string {
 		$html = [];
 
-		// Open form
+		// Open form + nonce.
 		$html[] = '<form method="post" class="leira-auth-form">';
+		$html[] = wp_nonce_field( $this->name(), '_wpnonce', true, false );
 
-		// Form-level errors
-		$messages = $this->messages()->all();
-		$messages = array_filter( $messages, function ( $message ) {
-			return $message->is_error();
-		} );
+		// Form-level errors.
+		$messages = array_filter(
+			$this->messages()->all(),
+			static function ( Message $message ): bool {
+				return $message->is_error();
+			}
+		);
 		if ( ! empty( $messages ) ) {
 			$html[] = '<div class="alert alert-danger">';
-			if ( count( $messages ) == 1 ) {
-				$html[] = $messages[0];
+			if ( 1 === count( $messages ) ) {
+				$html[] = '<div>' . esc_html( $messages[0]->text() ) . '</div>';
 			} else {
 				foreach ( $messages as $message ) {
 					$html[] = '<div>' . esc_html( $message->text() ) . '</div>';
@@ -211,52 +242,111 @@ class Form implements FormInterface, Validatable, Stateful{
 			$html[] = '</div>';
 		}
 
-		// Fields
+		// Fields.
 		foreach ( $this->fields as $field ) {
 			$html[] = $field->render();
 		}
 
-		// Submit button
-		$html[] = '<button type="submit" class="btn btn-primary">Submit</button>';
+		// Submit button.
+		$html[] = sprintf(
+			'<button type="submit" class="btn btn-primary">%s</button>',
+			esc_html( $this->submit_label )
+		);
 
-		// Close form
+		// Close form.
 		$html[] = '</form>';
 
-		$html = array_filter( $html, 'trim' );
-		$html = array_filter( $html );
+		$html = array_filter( $html, static fn( string $line ): bool => '' !== trim( $line ) );
 
 		return implode( PHP_EOL, $html );
 	}
 
 	/**
-	 * Build the form
+	 * Build form fields from options.
 	 *
-	 * @param  array  $options  Options to build the form
+	 * @param  array  $options
 	 *
 	 * @return void
 	 */
-	public function build( array $options ) {
-		//TODO: add nonce
+	public function build( array $options ): void {
+		// Base class intentionally empty.
 	}
 
 	/**
-	 * Get the current object state.
+	 * Export form state.
 	 *
 	 * @return array
 	 */
 	public function state(): array {
-		// TODO: Implement state() method.
-		return [];
+		$state = [
+			'messages' => $this->messages()->to_array(),
+			'fields'   => [],
+		];
+
+		foreach ( $this->fields() as $field ) {
+			$state['fields'][ $field->get_name() ] = $field->state();
+		}
+
+		return $state;
 	}
 
 	/**
-	 * Restore a previous object state.
+	 * Restore a previous form state.
 	 *
-	 * @param  array  $state  The state to restore
+	 * @param  array  $state
 	 *
 	 * @return void
 	 */
 	public function restore( array $state ): void {
-		// TODO: Implement restore() method.
+		$this->messages()->clear();
+		$messages = $state['messages'] ?? [];
+		if ( is_array( $messages ) ) {
+			foreach ( $messages as $message ) {
+				if ( ! is_array( $message ) ) {
+					continue;
+				}
+				$text = isset( $message['text'] ) ? (string) $message['text'] : '';
+				if ( '' === $text ) {
+					continue;
+				}
+				$type = isset( $message['type'] ) ? (string) $message['type'] : Message::ERROR;
+				$this->messages()->add( $text, $type );
+			}
+		}
+
+		$fields = $state['fields'] ?? [];
+		if ( ! is_array( $fields ) ) {
+			return;
+		}
+
+		foreach ( $fields as $name => $field_state ) {
+			$field = $this->get_field( (string) $name );
+			if ( ! $field || ! is_array( $field_state ) ) {
+				continue;
+			}
+			$field->restore( $field_state );
+		}
+	}
+
+	/**
+	 * Move errors from non-inline fields (for example hidden fields) to form-level messages.
+	 *
+	 * @return void
+	 */
+	protected function append_non_inline_field_messages(): void {
+		foreach ( $this->fields() as $field ) {
+			$should_render_inline = true;
+			if ( method_exists( $field, 'should_render_errors_inline' ) ) {
+				$should_render_inline = (bool) $field->should_render_errors_inline();
+			}
+
+			if ( $should_render_inline ) {
+				continue;
+			}
+
+			foreach ( $field->messages()->all() as $message ) {
+				$this->messages()->add( $message->text(), $message->type() );
+			}
+		}
 	}
 }

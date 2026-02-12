@@ -2,8 +2,6 @@
 
 namespace Leira_Auth\Public\Contracts;
 
-use Leira_Auth\Public\Messages\Bag;
-
 /**
  * Field interface
  *
@@ -12,7 +10,7 @@ use Leira_Auth\Public\Messages\Bag;
  * @package Leira_Auth\Public\Contracts
  * @since 1.0.0
  */
-interface Field{
+interface Field extends Validatable, Stateful{
 
 	/**
 	 * Get the field name (HTML name / identifier)

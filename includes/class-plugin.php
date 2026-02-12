@@ -5,7 +5,6 @@ namespace Leira_Auth\Includes;
 use Leira_Auth\Admin\Settings;
 use Leira_Auth\Public\Controller;
 use Leira_Auth\Public\Forms\Factory;
-use Leira_Auth\Public\Login;
 use Leira_Auth\Public\Flash;
 
 /**
@@ -23,7 +22,6 @@ use Leira_Auth\Public\Flash;
  * @author     Ariel <arielhr1987@gmail.com>
  *
  * @property Settings $settings The admin settings
- * @property Login $login The login form
  * @property Factory $forms The forms factory
  * @property Flash $flash The Flash instance
  */
@@ -131,37 +129,17 @@ class Plugin{
 
 		add_action( 'init', [ $this, 'load_plugin_textdomain' ] );
 
-		$login = new Login( 'login' );
-		//Register block
-		//add_action( 'init', array( $login, 'init' ) );
-		//add_action( 'enqueue_block_editor_assets', array( $login, 'enqueue_block_editor_assets' ) );
-		//Shortcode for the custom login form
-		//TODO: use correct shortcode name
-		//add_shortcode( 'custom_login_form', array( $login, 'shortcode' ) );
-		//Handle login redirection, fires after a user login has failed.
-		//add_action( 'wp_login_failed', array( $login, 'login_failed' ), 10, 2 );
-		//Handle login errors and redirections on login failure
-		//add_filter( 'wp_login_errors', array( $login, 'login_errors' ), 10, 2 );
-		//
-		//add_filter( 'authenticate', array( $login, 'verify_user_pass' ), 60, 3 );
-		//Custom login form defaults
-		//add_filter( 'login_form_defaults', array( $login, 'login_form_defaults' ) );
-		//Show login error messages
-		//add_filter( 'login_form_top', array( $login, 'login_form_top' ), 10, 2 );
-		//Show forgot password and register links
-		//add_filter( 'login_form_bottom', array( $login, 'login_form_bottom' ), 10, 2 );
-		//Change login URL
-		add_filter( 'login_url', array( $login, 'login_url' ), 10, 3 );
-
 		$controller = new Controller();
-		//Initialize class instances
-		add_action( 'plugin_loaded', array( $controller, 'plugin_loaded' ) );
+		// Initialize class instances.
+		add_action( 'plugins_loaded', array( $controller, 'plugins_loaded' ) );
 		//Register blocks
 		add_action( 'init', array( $controller, 'init' ) );
 		//Handle form submission
 		add_action( 'wp', array( $controller, 'handle' ) );
 		//one shortcode to rule them all
 		add_shortcode( 'leira_auth', array( $controller, 'shortcode' ) );
+		//Change login URL for frontend.
+		add_filter( 'login_url', array( $controller, 'login_url' ), 10, 3 );
 
 
 //		$plugin_public = new Leira_Auth_Public( $this->get_plugin_name(), $this->get_version() );
@@ -223,7 +201,7 @@ class Plugin{
 		load_plugin_textdomain(
 			$this->get_plugin_name(),
 			false,
-			dirname( plugin_basename( __FILE__ ) ) . '/languages/'
+			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);
 	}
 

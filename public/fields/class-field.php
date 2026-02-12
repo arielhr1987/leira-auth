@@ -8,13 +8,22 @@ use Leira_Auth\Public\Contracts\Form;
 use Leira_Auth\Public\Constraints\Required;
 use Leira_Auth\Public\Contracts\Stateful;
 use Leira_Auth\Public\Messages\Bag;
+use Leira_Auth\Public\Messages\Message;
+use RuntimeException;
 
 /**
  * The base implementation for the fields in a form
  *
  * @since 1.0.0
  */
-abstract class Field implements Field_Interface, Stateful{
+abstract class Field implements Field_Interface{
+
+	/**
+	 * Field name.
+	 *
+	 * @var string
+	 */
+	protected string $name;
 
 	/**
 	 * The error detected when validating this field
@@ -43,6 +52,7 @@ abstract class Field implements Field_Interface, Stateful{
 	 * @param  string  $name  The field name.
 	 */
 	public function __construct( string $name ) {
+		$this->name     = $name;
 		$this->messages = new Bag();
 	}
 
@@ -50,7 +60,9 @@ abstract class Field implements Field_Interface, Stateful{
 	 * Get the field name
 	 * @return string
 	 */
-	abstract public function get_name(): string;
+	public function get_name(): string {
+		return $this->name;
+	}
 
 	/**
 	 * Get the submitted value of the field
@@ -74,6 +86,15 @@ abstract class Field implements Field_Interface, Stateful{
 	 * @return string
 	 */
 	abstract public function render(): string;
+
+	/**
+	 * Get registered constraints.
+	 *
+	 * @return Constraint[]
+	 */
+	public function constraints(): array {
+		return $this->constraints;
+	}
 
 	/**
 	 * Add a validator to the list of the field validations.
@@ -103,6 +124,10 @@ abstract class Field implements Field_Interface, Stateful{
 	 * @return Form The parent form instance
 	 */
 	public function get_form(): Form {
+		if ( ! $this->form ) {
+			throw new RuntimeException( 'Field is not bound to a form.' );
+		}
+
 		return $this->form;
 	}
 
@@ -126,7 +151,7 @@ abstract class Field implements Field_Interface, Stateful{
 	 *
 	 * @return bool
 	 */
-	public function validate( $value ): bool {
+	public function validate( mixed $value ): bool {
 		$this->messages = new Bag();
 		$this->set_value( $value );
 
@@ -146,6 +171,63 @@ abstract class Field implements Field_Interface, Stateful{
 		}
 
 		return ! $this->messages()->has();
+	}
+
+	/**
+	 * Export current field state.
+	 *
+	 * @return array
+	 */
+	public function state(): array {
+		return [
+			'value'    => $this->get_value(),
+			'messages' => $this->messages()->to_array(),
+		];
+	}
+
+	/**
+	 * Restore field state.
+	 *
+	 * @param  array  $state
+	 *
+	 * @return void
+	 */
+	public function restore( array $state ): void {
+		if ( array_key_exists( 'value', $state ) ) {
+			$this->set_value( $state['value'] );
+		}
+
+		$this->messages()->clear();
+
+		$messages = $state['messages'] ?? [];
+		if ( ! is_array( $messages ) ) {
+			return;
+		}
+
+		foreach ( $messages as $message ) {
+			if ( is_array( $message ) ) {
+				$text = isset( $message['text'] ) ? (string) $message['text'] : '';
+				if ( '' === $text ) {
+					continue;
+				}
+				$type = isset( $message['type'] ) ? (string) $message['type'] : Message::ERROR;
+				$this->messages()->add( $text, $type );
+				continue;
+			}
+
+			if ( is_string( $message ) && '' !== $message ) {
+				$this->messages()->add( $message, Message::ERROR );
+			}
+		}
+	}
+
+	/**
+	 * Whether this field should display validation errors inline.
+	 *
+	 * @return bool
+	 */
+	public function should_render_errors_inline(): bool {
+		return true;
 	}
 
 	/**

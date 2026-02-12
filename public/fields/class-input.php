@@ -42,7 +42,7 @@ class Input extends Field{
 	 * @return string The field name
 	 */
 	public function get_name(): string {
-		return $this->get_attribute( 'name' );
+		return (string) $this->get_attribute( 'name', $this->name );
 	}
 
 	/**
@@ -61,7 +61,7 @@ class Input extends Field{
 	 *
 	 * @return Field
 	 */
-	public function set_value( mixed $value ): Field {
+	public function set_value( mixed $value ): self {
 		$this->set_attribute( 'value', $value );
 
 		return $this;
@@ -228,13 +228,13 @@ class Input extends Field{
 	protected function render_errors(): string {
 		$html = '';
 		if ( $this->messages()->has() ) {
+			$messages = $this->messages()->all();
 			$html     .= '<div class="invalid-feedback">';
-			$messages = $this->messages()->to_array();
-			if ( count( $messages ) == 1 ) {
-				$html .= $messages[0];
+			if ( 1 === count( $messages ) ) {
+				$html .= esc_html( $messages[0]->text() );
 			} else {
-				foreach ( $this->messages()->to_array() as $message ) {
-					$html .= sprintf( '<div>%s</div>', esc_html( $message ) );
+				foreach ( $messages as $message ) {
+					$html .= sprintf( '<div>%s</div>', esc_html( $message->text() ) );
 				}
 			}
 			$html .= '</div>';
@@ -273,8 +273,11 @@ class Input extends Field{
 		foreach ( $attributes as $key => $value ) {
 			$attrs[] = $this->render_attribute( $key, $value );
 		}
+		$attrs = array_filter( $attrs );
 
-		$tag .= ' ' . implode( ' ', $attrs );
+		if ( ! empty( $attrs ) ) {
+			$tag .= ' ' . implode( ' ', $attrs );
+		}
 
 		// Self-closing if no content
 		if ( $content === '' ) {

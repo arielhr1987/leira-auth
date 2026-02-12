@@ -2,8 +2,6 @@
 
 namespace Leira_Auth\Public\Contracts;
 
-use Leira_Auth\Public\Messages\Bag;
-
 /**
  * Form interface
  *
@@ -13,7 +11,23 @@ use Leira_Auth\Public\Messages\Bag;
  * @package Leira_Auth\Public\Contracts
  * @since 1.0.0
  */
-interface Form {
+interface Form extends Validatable, Stateful{
+
+	/**
+	 * Get the form name/identifier.
+	 *
+	 * @return string
+	 */
+	public function name(): string;
+
+	/**
+	 * Build form fields and defaults from options.
+	 *
+	 * @param  array  $options  Form options
+	 *
+	 * @return void
+	 */
+	public function build( array $options ): void;
 
 	/**
 	 * Handle the HTTP request
