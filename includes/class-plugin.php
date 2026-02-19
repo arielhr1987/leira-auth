@@ -6,6 +6,7 @@ use Leira_Auth\Admin\Settings;
 use Leira_Auth\Public\Controller;
 use Leira_Auth\Public\Forms\Factory;
 use Leira_Auth\Public\Flash;
+use Leira_Auth\Public\Url_Controller;
 
 /**
  * The core plugin class.
@@ -129,6 +130,9 @@ class Plugin{
 
 		add_action( 'init', [ $this, 'load_plugin_textdomain' ] );
 
+		/**
+		 * Form handler
+		 */
 		$controller = new Controller();
 		// Initialize class instances.
 		add_action( 'plugins_loaded', array( $controller, 'plugins_loaded' ) );
@@ -143,6 +147,23 @@ class Plugin{
 		add_shortcode( 'leira_auth', array( $controller, 'shortcode' ) );
 		//Change login URL for frontend.
 		add_filter( 'login_url', array( $controller, 'login_url' ), 10, 3 );
+
+		/**
+		 * Custom URL handling
+		 */
+		$url_controller = new Url_Controller();
+		// Filter Login URL
+		add_filter( 'login_url', [ $url_controller, 'login_url' ], 10, 3 );
+		// Filter register URL
+		add_filter( 'register_url', [ $url_controller, 'register_url' ] );
+		// Filter lost password URL
+		add_filter( 'lostpassword_url', [ $url_controller, 'lost_password_url' ], 10, 2 );
+		// Filter logout URL
+		add_filter( 'logout_url', [ $url_controller, 'logout_url' ], 10, 2 );
+		// Filter reset password email links
+		add_filter( 'retrieve_password_message', [ $url_controller, 'retrieve_password_message' ], 10, 4 );
+
+
 
 
 //		$plugin_public = new Leira_Auth_Public( $this->get_plugin_name(), $this->get_version() );

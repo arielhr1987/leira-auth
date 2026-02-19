@@ -121,9 +121,9 @@ class Login extends Form{
 		}
 
 		$credentials = [
-			'user_login'    => (string) ( $this->get( 'log' )?->get_value() ?? '' ),
-			'user_password' => (string) ( $this->get( 'pwd' )?->get_value() ?? '' ),
-			'remember'      => ! empty( $this->get( 'rememberme' )?->get_value() ),
+			'user_login'    => (string) ( $this->get( 'log' )?->value() ?? '' ),
+			'user_password' => (string) ( $this->get( 'pwd' )?->value() ?? '' ),
+			'remember'      => ! empty( $this->get( 'rememberme' )?->value() ),
 		];
 
 		$user = wp_signon( $credentials, is_ssl() );
@@ -162,7 +162,7 @@ class Login extends Form{
 	 * @return string
 	 */
 	protected function resolve_redirect_url( \WP_User $user ): string {
-		$redirect = wp_validate_redirect( (string) ( $this->get( 'redirect_to' )?->get_value() ?? '' ), '' );
+		$redirect = wp_validate_redirect( (string) ( $this->get( 'redirect_to' )?->value() ?? '' ), '' );
 		if ( '' === $redirect ) {
 			$redirect = (string) apply_filters( 'leira_auth_login_success_redirect', home_url( '/' ), $user, $this );
 		}
