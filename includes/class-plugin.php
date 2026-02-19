@@ -108,7 +108,7 @@ class Plugin{
 
 			add_action( 'admin_menu', [ $this->settings, 'admin_menu' ] );
 
-			add_action( 'admin_init', [ $this->settings, 'register_settings' ] );
+			add_action( 'admin_init', [ $this->settings, 'admin_init' ] );
 		}
 
 //		$plugin_admin = new Leira_Auth_Admin( $this->get_plugin_name(), $this->get_version() );

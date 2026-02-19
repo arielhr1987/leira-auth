@@ -19,20 +19,76 @@ use WP_User;
  */
 class Url_Controller{
 	/**
-	 * Mapping of auth action => page ID loaded from options.
+	 * Cached mapping of auth action name to resolved page URL.
 	 *
-	 * @var array<string,int>
+	 * @var array<string,string>
 	 */
 	protected array $pages = [];
 
 	/**
-	 * Registers all WordPress filters required to override auth URLs.
+	 * Returns the permalink for a configured authentication page.
 	 *
-	 * Should be called once during plugin bootstrap.
+	 * Reads the stored page ID from plugin options, resolves the permalink,
+	 * and caches the result for subsequent calls.
 	 *
-	 * @return void
+	 * @param string $name Auth action key (login, register, lost_password, logout, etc.)
+	 *
+	 * @return string|false Page URL string when configured, false otherwise.
 	 */
-	public function init(): void {}
+	protected function get_page_url( $name ) {
+		if ( $this->pages[ $name ] ) {
+			return $this->pages[ $name ];
+		}
+
+		$option = get_option( 'leira_auth_page_', $name );
+		if ( empty( $option ) ) {
+			return false;
+		}
+
+		$url = get_permalink( $option );
+		if ( empty( $url ) ) {
+			return false;
+		}
+		$this->pages[ $name ] = $url;
+
+		return $url;
+	}
+
+	/**
+	 * Gets the configured login page URL.
+	 *
+	 * @return string|false
+	 */
+	public function get_login_url() {
+		return $this->get_page_url( 'login' );
+	}
+
+	/**
+	 * Gets the configured registration page URL.
+	 *
+	 * @return string|false
+	 */
+	public function get_register_url() {
+		return $this->get_page_url( 'register' );
+	}
+
+	/**
+	 * Gets the configured lost password page URL.
+	 *
+	 * @return string|false
+	 */
+	public function get_lost_password_url() {
+		return $this->get_page_url( 'lost_password' );
+	}
+
+	/**
+	 * Gets the configured logout page URL.
+	 *
+	 * @return string|false
+	 */
+	public function get_logout_url() {
+		return $this->get_page_url( 'logout' );
+	}
 
 	/**
 	 * Determines whether the current request is a frontend context.
@@ -40,7 +96,7 @@ class Url_Controller{
 	 * Prevents URL overrides inside wp-admin or wp-login.php
 	 * to avoid breaking native authentication flows.
 	 *
-	 * @return bool True when running on frontend.
+	 * @return bool True when running on the frontend.
 	 */
 	protected function is_frontend(): bool {
 		// Never override inside wp-login.php or admin
@@ -58,34 +114,12 @@ class Url_Controller{
 	}
 
 	/**
-	 * Returns the permalink for a configured auth page.
-	 *
-	 * @param  string  $key  Auth action key (login, register, lost_password, etc.)
-	 *
-	 * @return string|null Page URL or null if not configured.
-	 */
-	private function get_page_url( string $key ): ?string {
-
-		if ( empty( $this->pages ) ) {
-			$this->pages = (array) get_option( 'leira_auth_pages', [] );
-		}
-
-		if ( empty( $this->pages[ $key ] ) ) {
-			return null;
-		}
-
-		$url = get_permalink( (int) $this->pages[ $key ] );
-
-		return $url ?: null;
-	}
-
-	/**
 	 * Adds a redirect_to query parameter to a URL when provided.
 	 *
-	 * @param  string|null  $url  Base URL.
-	 * @param  string|null  $redirect  Redirect destination.
+	 * @param string|null $url      Base URL.
+	 * @param string|null $redirect Redirect destination.
 	 *
-	 * @return string Modified URL (or empty string if base missing).
+	 * @return string Modified URL, or empty string if base URL missing.
 	 */
 	private function add_redirect( ?string $url, $redirect ): string {
 		if ( ! $url ) {
@@ -102,9 +136,9 @@ class Url_Controller{
 	/**
 	 * Filters the WordPress login URL.
 	 *
-	 * @param  string  $login_url  Default login URL.
-	 * @param  string  $redirect  Optional redirect target.
-	 * @param  bool  $force_reauth  Whether re-authentication is required.
+	 * @param string      $login_url    Default login URL.
+	 * @param string|null $redirect     Optional redirect target.
+	 * @param bool        $force_reauth Whether re-authentication is required.
 	 *
 	 * @return string Modified login URL.
 	 */
@@ -113,7 +147,7 @@ class Url_Controller{
 			return $login_url;
 		}
 
-		$url = $this->get_page_url( 'login' );
+		$url = $this->get_login_url();
 		if ( ! $url ) {
 			return $login_url;
 		}
@@ -130,7 +164,7 @@ class Url_Controller{
 	/**
 	 * Filters the WordPress registration URL.
 	 *
-	 * @param  string  $register_url  Default registration URL.
+	 * @param string $register_url Default registration URL.
 	 *
 	 * @return string Modified registration URL.
 	 */
@@ -139,14 +173,14 @@ class Url_Controller{
 			return $register_url;
 		}
 
-		return $this->get_page_url( 'register' ) ?: $register_url;
+		return $this->get_register_url() ?: $register_url;
 	}
 
 	/**
 	 * Filters the WordPress lost password URL.
 	 *
-	 * @param  string  $lost_url  Default lost password URL.
-	 * @param  string  $redirect  Optional redirect target.
+	 * @param string      $lost_url Default lost password URL.
+	 * @param string|null $redirect Optional redirect target.
 	 *
 	 * @return string Modified lost password URL.
 	 */
@@ -155,7 +189,7 @@ class Url_Controller{
 			return $lost_url;
 		}
 
-		$url = $this->get_page_url( 'lost_password' );
+		$url = $this->get_lost_password_url();
 		if ( ! $url ) {
 			return $lost_url;
 		}
@@ -166,10 +200,10 @@ class Url_Controller{
 	/**
 	 * Filters the WordPress logout URL.
 	 *
-	 * Ensures nonce protection is preserved when using a custom page.
+	 * Ensures nonce protection is preserved when using a custom logout page.
 	 *
-	 * @param  string  $logout_url  Default logout URL.
-	 * @param  string  $redirect  Optional redirect target.
+	 * @param string      $logout_url Default logout URL.
+	 * @param string|null $redirect   Optional redirect target.
 	 *
 	 * @return string Modified logout URL.
 	 */
@@ -178,7 +212,7 @@ class Url_Controller{
 			return $logout_url;
 		}
 
-		$url = $this->get_page_url( 'logout' );
+		$url = $this->get_logout_url();
 
 		if ( ! $url ) {
 			// fallback: still use default logout with nonce
@@ -203,10 +237,10 @@ class Url_Controller{
 	 * Replaces the default wp-login.php?action=rp link with the configured
 	 * frontend reset password page while preserving the reset key and login.
 	 *
-	 * @param  string  $message  Email message body.
-	 * @param  string  $key  Password reset key.
-	 * @param  string  $user_login  User login name.
-	 * @param  WP_User  $user_data  User object.
+	 * @param string  $message    Email message body.
+	 * @param string  $key        Password reset key.
+	 * @param string  $user_login User login name.
+	 * @param WP_User $user_data  User object.
 	 *
 	 * @return string Modified email message.
 	 */
