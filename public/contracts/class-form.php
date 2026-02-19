@@ -2,88 +2,102 @@
 
 namespace Leira_Auth\Public\Contracts;
 
+use Leira_Auth\Public\Collections\Messages;
+use Leira_Auth\Public\Fields\Field as Field_Node;
+
 /**
- * Form interface
+ * Form contract.
  *
- * Defines the contract for form objects in the authentication system.
- * Handles the form rendering, validation, field management, and error handling.
- *
- * @package Leira_Auth\Public\Contracts
  * @since 1.0.0
  */
-interface Form extends Validatable, Stateful{
+interface Form{
 
 	/**
-	 * Get the form name/identifier.
+	 * Form identifier.
 	 *
 	 * @return string
 	 */
 	public function name(): string;
 
 	/**
-	 * Build form fields and defaults from options.
+	 * Build form from options.
 	 *
-	 * @param  array  $options  Form options
+	 * @param  array  $options
 	 *
 	 * @return void
 	 */
 	public function build( array $options ): void;
 
 	/**
-	 * Handle the HTTP request
+	 * Handle current request.
 	 *
-	 * Processes the incoming HTTP request data, populates form fields, and validates the form.
-	 *
-	 * @return bool True if the form was submitted and valid, false otherwise
+	 * @return bool
 	 */
 	public function handle(): bool;
 
 	/**
-	 * Render the full form HTML
+	 * Collected data.
 	 *
-	 * Generates the complete HTML representation of the form including all fields, error messages, and form elements.
-	 *
-	 * @return string The HTML representation of the form
-	 */
-	public function render(): string;
-
-	/**
-	 * Get all submitted form data
-	 *
-	 * Retrieves all data submitted with the form as an associative array.
-	 *
-	 * @return array The submitted form data as field_name => value pairs
+	 * @return array
 	 */
 	public function data(): array;
 
 	/**
-	 * Add a field to the form
+	 * Add a child field.
 	 *
-	 * Registers a field with the form and establishes the parent-child relationship between the form and the field.
+	 * @param  Field_Node  $field
+	 * @param  string|null  $key
 	 *
-	 * @param  Field  $field  The field to add to the form
-	 *
-	 * @return self Returns the current instance for method chaining
+	 * @return self
 	 */
-	public function add_field( Field $field ): self;
+	public function add( Field_Node $field, ?string $key = null ): self;
 
 	/**
-	 * Get a field by name
+	 * Set a child field by key.
 	 *
-	 * Retrieves a specific field from the form by its unique name.
+	 * @param  string  $name
+	 * @param  Field_Node  $field
 	 *
-	 * @param  string  $name  The name of the field to get from the form
-	 *
-	 * @return ?Field The field object if found, null otherwise
+	 * @return self
 	 */
-	public function get_field( string $name ): ?Field;
+	public function set( string $name, Field_Node $field ): self;
 
 	/**
-	 * Get all the form fields
+	 * Get child field by key.
 	 *
-	 * Retrieves all fields registered with this form.
+	 * @param  string  $name
 	 *
-	 * @return array The array of form fields
+	 * @return Field_Node|null
 	 */
-	public function fields(): array;
+	public function get( string $name ): ?Field_Node;
+
+	/**
+	 * Get an ordered child field list.
+	 *
+	 * @return array<int, Field_Node>
+	 */
+	public function all(): array;
+
+	/**
+	 * Remove one child field by key.
+	 *
+	 * @param  string  $name
+	 *
+	 * @return self
+	 */
+	public function remove( string $name ): self;
+
+	/**
+	 * Remove all child fields.
+	 *
+	 * @return self
+	 */
+	public function clear(): self;
+
+	/**
+	 * Get form-level messages.
+	 *
+	 * @return Messages
+	 */
+	public function messages(): Messages;
 }

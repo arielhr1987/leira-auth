@@ -3,9 +3,11 @@
 namespace Leira_Auth\Public\Fields;
 
 /**
- * Base input implementation.
+ * Generic button input field.
  *
  * @since 1.0.0
  */
-class Input extends Field{
+class Button extends Field{
+
+
 }

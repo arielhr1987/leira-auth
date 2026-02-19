@@ -43,8 +43,8 @@ class Leira_Auth_Public{
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @param string $plugin_name The name of the plugin.
-	 * @param string $version     The version of this plugin.
+	 * @param  string  $plugin_name  The name of the plugin.
+	 * @param  string  $version  The version of this plugin.
 	 *
 	 * @since    1.0.0
 	 */
@@ -120,98 +120,4 @@ class Leira_Auth_Public{
 
 	}
 
-	/**
-	 *
-	 */
-	public function add_shortcodes() {
-
-		add_shortcode( 'leira-auth-login', function( $atts ) {
-			require_once __DIR__ . '/class-leira-auth-form-login.php';
-			require_once __DIR__ . '/class-leira-auth-form-field.php';
-			require_once __DIR__ . '/class-leira-auth-form-field-text.php';
-			require_once __DIR__ . '/class-leira-auth-form-field-password.php';
-			require_once __DIR__ . '/class-leira-auth-form-field-checkbox.php';
-			require_once __DIR__ . '/class-leira-auth-form-field-action.php';
-
-			$form = new Leira_Auth_Form_Login( $atts );
-
-			return $form->render();
-
-//			function phpinfo_array() {
-//				ob_start();
-//				phpinfo( //INFO_ALL
-//				         //INFO_GENERAL
-//				         //INFO_CREDITS
-//				         INFO_CONFIGURATION
-//				         //-INFO_MODULES
-//				         //-INFO_ENVIRONMENT
-//				         //-INFO_VARIABLES
-//				         //-INFO_LICENSE
-//				);
-//				$info_arr   = array();
-//				$info_lines = explode( "\n", strip_tags( ob_get_clean(), "<tr><td><h2>" ) );
-//				$cat        = "General";
-//				foreach ( $info_lines as $line ) {
-//					// new cat?
-//					preg_match( "~<h2>(.*)</h2>~", $line, $title ) ? $cat = $title[1] : null;
-//					if ( preg_match( "~<tr><td[^>]+>([^<]*)</td><td[^>]+>([^<]*)</td></tr>~", $line, $val ) ) {
-//						$info_arr[ $cat ][ $val[1] ] = $val[2];
-//					} elseif ( preg_match( "~<tr><td[^>]+>([^<]*)</td><td[^>]+>([^<]*)</td><td[^>]+>([^<]*)</td></tr>~", $line, $val ) ) {
-//						$info_arr[ $cat ][ $val[1] ] = array( "local" => $val[2], "master" => $val[3] );
-//					}
-//				}
-//
-//				return $info_arr;
-//			}
-//
-//			$t = phpinfo_array();
-//			$a = 0;
-//			phpinfo(INFO_CONFIGURATION);
-		} );
-
-		add_shortcode( 'leira-auth-logout', function() {
-
-		} );
-
-		add_shortcode( 'leira-auth-forgot', function() {
-
-		} );
-
-		add_shortcode( 'leira-auth-reset', function() {
-
-		} );
-
-		add_shortcode( 'leira-auth-register', function() {
-
-		} );
-
-		add_shortcode( 'leira-auth-activate', function() {
-			//check user meta key
-		} );
-
-	}
-
-	/**
-	 * Handle form submits
-	 *
-	 * @since    1.0.0
-	 */
-	public function submit() {
-
-		if ( is_singular() ) {
-
-			global $wp_query;
-			$post = $wp_query->get_queried_object();
-			// If contains our shortcode
-			if ( $post && strpos( $post->post_content, 'leira-auth-login' ) !== false ) {
-
-				//Determine action
-				$action = isset( $_REQUEST['action'] ) ? sanitize_text_field( $_REQUEST['action'] ) : '';
-				if ( $action == 'login' ) {
-
-				}
-			}
-		}
-
-	}
 }

@@ -6,6 +6,7 @@ use Leira_Auth\Public\Constraints\Required;
 use Leira_Auth\Public\Fields\Checkbox;
 use Leira_Auth\Public\Fields\Hidden;
 use Leira_Auth\Public\Fields\Password;
+use Leira_Auth\Public\Fields\Submit;
 use Leira_Auth\Public\Fields\Text;
 
 /**
@@ -16,69 +17,101 @@ use Leira_Auth\Public\Fields\Text;
 class Login extends Form{
 
 	/**
-	 * Class constructor.
+	 * Last computed success redirect URL.
+	 *
+	 * @var string
+	 */
+	protected string $redirect_url = '';
+
+	/**
+	 * Constructor.
 	 */
 	public function __construct() {
 		parent::__construct( 'login' );
 	}
 
 	/**
-	 * Build login form fields.
+	 * Build login fields from options.
 	 *
 	 * @param  array  $options
 	 *
 	 * @return void
 	 */
 	public function build( array $options ): void {
-		$this->empty_fields();
 
-		$label_username = (string) ( $options['label_username'] ?? __( 'Username', 'leira-auth' ) );
-		$label_password = (string) ( $options['label_password'] ?? __( 'Password', 'leira-auth' ) );
-		$label_remember = (string) ( $options['label_remember'] ?? __( 'Remember me', 'leira-auth' ) );
-		$label_submit   = (string) ( $options['label_log_in'] ?? __( 'Log In', 'leira-auth' ) );
+		//Form options
+		$this->options()
+		     ->set( 'id', (string) ( $options['form_id'] ?? '' ) )
+		     ->set( 'class', (string) ( $options['form_class'] ?? '' ) )
+		     ->set( 'ajax', (bool) ( $options['ajax'] ?? false ) );
 
-		$action = ( new Hidden( 'action' ) )
-			->set_value( 'login' )
-			->constraint( new Required() );
-
-		$username = ( new Text( 'log' ) )
-			->set_attribute( 'id', 'user_login' )
-			->set_attribute( 'autocomplete', 'username' )
-			->set_attribute( 'autocapitalize', 'off' )
-			->set_attribute( 'size', 20 )
-			->set_attribute( 'required', true )
-			->set_label( $label_username )
-			->constraint( new Required() );
-
-		$password = ( new Password( 'pwd' ) )
-			->set_attribute( 'id', 'user_pass' )
-			->set_attribute( 'required', true )
-			->set_attribute( 'autocomplete', 'current-password' )
-			->set_label( $label_password )
-			->constraint( new Required() );
-
-		$remember_me = ( new Checkbox( 'rememberme' ) )
-			->set_attribute( 'id', 'rememberme' )
-			->set_attribute( 'value', 'forever' )
-			->set_label( $label_remember );
-
-		$this
-			->add_field( $action )
-			->add_field( $username )
-			->add_field( $password )
-			->add_field( $remember_me )
-			->set_submit_label( $label_submit );
-
-		$redirect = $options['redirect'] ?? '';
-		if ( is_string( $redirect ) && '' !== $redirect ) {
-			$this->add_field(
-				( new Hidden( 'redirect_to' ) )->set_value( sanitize_text_field( $redirect ) )
-			);
+		//Redirect to
+		$redirect_url = $options['redirect'] ?? '';
+		if ( is_string( $redirect_url ) && '' !== $redirect_url ) {
+			$redirect_to = new Hidden( 'redirect_to' );
+			//$redirect_to->constraints->add()// URL encoded array only
+			$redirect_to->options()->set( 'input_attr', [
+				'value' => $redirect_url,
+			] );
+			$this->add( $redirect_to );
 		}
+
+		//Username or Email
+		$username = new Text( 'log' );
+		$username->constraints()
+		         ->add( new Required() );
+		$username->options()
+		         ->set( 'label', (string) ( $options['label_username'] ?? __( 'Username or Email', 'leira-auth' ) ) )
+		         ->set( 'input_attr', [
+			         'id'           => (string) ( $options['id_username'] ?? 'user_login' ),
+			         'class'        => (string) ( $options['username_class'] ?? '' ),
+			         'autocomplete' => 'username',
+			         'placeholder'  => (string) ( $options['username_placeholder'] ?? '' ),
+			         'required'     => true
+		         ] );
+		$this->add( $username );
+
+		//Password
+		$password = new Password( 'pwd' );
+		$password->constraints()
+		         ->add( new Required() );
+		$password->options()
+		         ->set( 'label', (string) ( $options['label_password'] ?? __( 'Password', 'leira-auth' ) ) )
+		         ->set( 'input_attr', [
+			         'id'           => (string) ( $options['id_password'] ?? 'user_pass' ),
+			         'class'        => (string) ( $options['password_class'] ?? '' ),
+			         'autocomplete' => 'current-password',
+			         'placeholder'  => (string) ( $options['password_placeholder'] ?? '' ),
+			         'required'     => true
+		         ] );
+		$this->add( $password );
+
+		//Remember me
+		$remember = new Checkbox( 'rememberme' );
+		$remember->constraints()
+		         ->add( new Required() );
+		$remember->options()
+		         ->set( 'label', (string) ( $options['label_remember'] ?? __( 'Remember me', 'leira-auth' ) ) )
+		         ->set( 'input_attr', [
+			         'id'    => (string) ( $options['id_remember'] ?? 'rememberme' ),
+			         'value' => 'forever',
+		         ] );
+		$this->add( $remember );
+
+		//Submit
+		$submit = new Submit( 'submit' );
+		$submit->options()
+		       ->set( 'input_attr', [
+			       'id'    => (string) ( $options['id_submit'] ?? 'submit' ),
+			       'class' => (string) ( $options['class_submit'] ?? '' ),
+		       ] );
+		$this->add( $submit );
+
+		do_action( 'leira_auth_form_fields_login', $this, $options );
 	}
 
 	/**
-	 * Handle login request.
+	 * Handle login submission.
 	 *
 	 * @return bool
 	 */
@@ -88,9 +121,9 @@ class Login extends Form{
 		}
 
 		$credentials = [
-			'user_login'    => (string) ( $this->get_field( 'log' )?->get_value() ?? '' ),
-			'user_password' => (string) ( $this->get_field( 'pwd' )?->get_value() ?? '' ),
-			'remember'      => ! empty( $this->get_field( 'rememberme' )?->get_value() ),
+			'user_login'    => (string) ( $this->get( 'log' )?->get_value() ?? '' ),
+			'user_password' => (string) ( $this->get( 'pwd' )?->get_value() ?? '' ),
+			'remember'      => ! empty( $this->get( 'rememberme' )?->get_value() ),
 		];
 
 		$user = wp_signon( $credentials, is_ssl() );
@@ -102,16 +135,38 @@ class Login extends Form{
 
 		do_action( 'leira_auth_login_success', $user, $this );
 
-		$redirect_to = '';
-		if ( isset( $_POST['redirect_to'] ) ) {
-			$redirect_to = wp_validate_redirect( (string) wp_unslash( $_POST['redirect_to'] ), '' );
+		$this->redirect_url = $this->resolve_redirect_url( $user );
+
+		if ( wp_doing_ajax() ) {
+			return true;
 		}
 
-		if ( '' === $redirect_to ) {
-			$redirect_to = (string) apply_filters( 'leira_auth_login_success_redirect', home_url( '/' ), $user, $this );
-		}
-
-		wp_safe_redirect( $redirect_to );
+		wp_safe_redirect( $this->redirect_url );
 		exit;
+	}
+
+	/**
+	 * Get the last computed redirect URL.
+	 *
+	 * @return string
+	 */
+	public function redirect_url(): string {
+		return $this->redirect_url;
+	}
+
+	/**
+	 * Resolve successful login redirect.
+	 *
+	 * @param  \WP_User  $user
+	 *
+	 * @return string
+	 */
+	protected function resolve_redirect_url( \WP_User $user ): string {
+		$redirect = wp_validate_redirect( (string) ( $this->get( 'redirect_to' )?->get_value() ?? '' ), '' );
+		if ( '' === $redirect ) {
+			$redirect = (string) apply_filters( 'leira_auth_login_success_redirect', home_url( '/' ), $user, $this );
+		}
+
+		return $redirect;
 	}
 }

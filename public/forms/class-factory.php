@@ -2,7 +2,7 @@
 
 namespace Leira_Auth\Public\Forms;
 
-use Leira_Auth\Public\Contracts\Form;
+use Leira_Auth\Public\Contracts\Stateful;
 use Leira_Auth\Public\Fields\Password;
 
 /**
@@ -74,6 +74,9 @@ class Factory{
 		$form = new $form_class();
 
 		$options = apply_filters( 'leira_auth_form_options', $options, $type, $form );
+		if ( method_exists( $form, 'set_options' ) ) {
+			$form->set_options( $options );
+		}
 		$form->build( $options );
 
 		do_action( 'leira_auth_form_built', $form, $type );
@@ -89,6 +92,10 @@ class Factory{
 	 * @return void
 	 */
 	public function restore( Form $form ): void {
+		if ( ! $form instanceof Stateful ) {
+			return;
+		}
+
 		$flash = leira_auth()->flash;
 		if ( ! $flash ) {
 			return;
@@ -110,6 +117,10 @@ class Factory{
 	 * @return void
 	 */
 	public function persist( Form $form ): void {
+		if ( ! $form instanceof Stateful ) {
+			return;
+		}
+
 		$flash = leira_auth()->flash;
 		if ( ! $flash ) {
 			return;
@@ -126,9 +137,9 @@ class Factory{
 		}
 
 		// Do not persist sensitive fields.
-		foreach ( $form->fields() as $field ) {
+		foreach ( $form->all() as $field ) {
 			if ( $field instanceof Password ) {
-				unset( $fields_state[ $field->get_name() ] );
+				unset( $fields_state[ $field->name() ] );
 			}
 		}
 		$data['fields'] = $fields_state;

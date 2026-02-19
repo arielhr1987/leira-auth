@@ -3,9 +3,12 @@
 namespace Leira_Auth\Public\Fields;
 
 /**
- * Base input implementation.
+ * Textarea input field.
  *
  * @since 1.0.0
  */
-class Input extends Field{
+class Textarea extends Field{
+
+
+
 }

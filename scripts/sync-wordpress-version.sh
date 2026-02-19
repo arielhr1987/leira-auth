@@ -17,5 +17,6 @@ fi
 
 # Require the matching version
 echo "📦 Updating johnpbloch/wordpress to version: $WP_VERSION"
-composer require --dev "johnpbloch/wordpress:$WP_VERSION"
-composer update
+composer require --dev "johnpbloch/wordpress:$WP_VERSION" --no-interaction
+#composer update
+#composer update johnpbloch/wordpress --with-dependencies

@@ -136,6 +136,9 @@ class Plugin{
 		add_action( 'init', array( $controller, 'init' ) );
 		//Handle form submission
 		add_action( 'wp', array( $controller, 'handle' ) );
+		// Handle AJAX form submission.
+		add_action( 'wp_ajax_leira_auth_submit', array( $controller, 'ajax_handle' ) );
+		add_action( 'wp_ajax_nopriv_leira_auth_submit', array( $controller, 'ajax_handle' ) );
 		//one shortcode to rule them all
 		add_shortcode( 'leira_auth', array( $controller, 'shortcode' ) );
 		//Change login URL for frontend.

@@ -104,7 +104,7 @@ class Settings{
 		add_settings_section(
 			$section,
 			__( 'General Settings', 'leira-auth' ),
-			null,
+			'__return_null',
 			$page
 		);
 

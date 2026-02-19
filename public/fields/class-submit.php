@@ -3,16 +3,19 @@
 namespace Leira_Auth\Public\Fields;
 
 /**
- * A submit input element.
+ * Submit input field.
  *
  * @since 1.0.0
  */
-class Submit extends Text{
+class Submit extends Field{
+
 	/**
-	 * Default text input attributes
-	 * @var array|string[]
+	 * Submit field constructor
+	 *
+	 * @param $name
 	 */
-	protected array $attributes = [
-		'type' => 'submit'
-	];
+	public function __construct( $name ) {
+		parent::__construct( $name );
+		$this->options->set( 'type', 'submit' );
+	}
 }

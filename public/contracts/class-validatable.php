@@ -2,7 +2,7 @@
 
 namespace Leira_Auth\Public\Contracts;
 
-use Leira_Auth\Public\Messages\Bag;
+use Leira_Auth\Public\Collections\Messages;
 
 /**
  * Contract for fields that support validation.
@@ -29,7 +29,7 @@ interface Validatable{
 	/**
 	 * Retrieve validation messages.
 	 *
-	 * @return Bag Validation messages generated during validation
+	 * @return Messages Validation messages generated during validation
 	 */
-	public function messages(): Bag;
+	public function messages(): Messages;
 }

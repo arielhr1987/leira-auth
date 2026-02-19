@@ -12,6 +12,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"ajax": {
+			"type": "boolean",
+			"default": false
+		},
 		"form_id": {
 			"type": "string",
 			"default": ""

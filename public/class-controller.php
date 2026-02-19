@@ -3,16 +3,26 @@
 namespace Leira_Auth\Public;
 
 use Leira_Auth\Includes\Plugin;
+use Leira_Auth\Public\Contracts\Form as FormContract;
 use Leira_Auth\Public\Forms\Factory;
+use Leira_Auth\Public\Renderers\Field_Renderer;
+use Leira_Auth\Public\Renderers\Renderer;
 use WP_Block;
 use WP_Post;
 
 /**
- * A class to handle user-facing logic
+ * Public-facing controller.
  *
  * @since 1.0.0
  */
 class Controller{
+
+	/**
+	 * Form renderer.
+	 *
+	 * @var Renderer|null
+	 */
+	protected ?Renderer $form_renderer = null;
 
 	/**
 	 * Initialize shared plugin instances.
@@ -32,27 +42,30 @@ class Controller{
 	}
 
 	/**
-	 * Register blocks
+	 * Register public blocks and scripts.
 	 *
 	 * @return void
 	 */
 	public function init(): void {
-		//TODO: Register all other blocks
+		$this->register_frontend_script();
+
 		$block = plugin_dir_path( __DIR__ ) . 'blocks/login/block.json';
-		register_block_type( $block, [
-			'render_callback' => array( $this, 'shortcode' ),
-		] );
+		register_block_type(
+			$block,
+			[
+				'render_callback' => [ $this, 'shortcode' ],
+			]
+		);
 	}
 
 	/**
-	 * Shortcode handler for [leira_auth] and callback for blocks
+	 * Shortcode and block render callback.
 	 *
-	 * @param  array  $attributes  The attributes
-	 * @param  string  $content  The content of block/shortcode
-	 * @param  mixed  $block  The WP_Block instance if block, string otherwise
+	 * @param  array<string, mixed>|mixed  $attributes
+	 * @param  string  $content
+	 * @param  mixed  $block
 	 *
-	 * @return string HTML output of the login form or message.
-	 * @since 1.0.0
+	 * @return string
 	 */
 	public function shortcode( $attributes = [], $content = '', $block = null ): string {
 		$forms = $this->get_forms_factory();
@@ -61,21 +74,18 @@ class Controller{
 		}
 
 		$form_type = '';
-
-		// Handle block logic.
 		if ( $block instanceof WP_Block ) {
 			$form_type = strtolower( (string) $block->name );
 			$form_type = substr( $form_type, strrpos( $form_type, '/' ) + 1 );
 		}
 
-		// Handle shortcode logic.
-		if ( empty( $form_type ) ) {
-			$form_type = $attributes['action'] ?? $attributes['form'] ?? '';
-			$form_type = sanitize_key( (string) $form_type );
+		if ( '' === $form_type ) {
+			$attributes = is_array( $attributes ) ? $attributes : [];
+			$form_type  = $attributes['action'] ?? $attributes['form'] ?? '';
+			$form_type  = sanitize_key( (string) $form_type );
 		}
 
-		// No action provided.
-		if ( empty( $form_type ) ) {
+		if ( '' === $form_type ) {
 			return __( 'You must provide an action attribute in your "leira_auth" shortcode.', 'leira-auth' );
 		}
 
@@ -84,33 +94,35 @@ class Controller{
 			return __( 'Form not available.', 'leira-auth' );
 		}
 
-		// Restore previous form state (messages, errors and values).
 		$forms->restore( $form );
 
-		return $form->render();
+		if ( method_exists( $form, 'ajax_enabled' ) && $form->ajax_enabled() ) {
+			wp_enqueue_script( 'leira-auth-frontend' );
+		}
+
+		return $this->renderer()->render( $form );
 	}
 
 	/**
-	 * Handle all form submissions
-	 * This method checks the form submitted is part of leira_auth and handles it accordingly
+	 * Handle regular page form submissions.
 	 *
 	 * @return void
 	 */
 	public function handle(): void {
 		$method = strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' );
-		// Bail if not a POST submission.
 		if ( 'POST' !== $method ) {
 			return;
 		}
-		// Bail if is not singular (post, page).
+
 		if ( ! is_singular() ) {
 			return;
 		}
+
 		$post = get_post();
 		if ( ! ( $post instanceof WP_Post ) ) {
 			return;
 		}
-		// Bail if the post does not contain any of our forms.
+
 		if ( ! $this->post_contains_auth_form( $post ) ) {
 			return;
 		}
@@ -120,20 +132,18 @@ class Controller{
 			return;
 		}
 
-		$action = sanitize_key( (string) wp_unslash( $_POST['action'] ?? '' ) );
-		if ( empty( $action ) ) {
+		$data      = is_array( $_POST ) ? wp_unslash( $_POST ) : [];
+		$form_type = $this->resolve_form_type( $data );
+		if ( '' === $form_type ) {
 			return;
 		}
 
-		$form = $forms->create( $action, is_array( $_POST ) ? wp_unslash( $_POST ) : [] );
-
-		// Bail if form unavailable.
+		$form = $forms->create( $form_type, $data );
 		if ( ! $form ) {
 			return;
 		}
 
 		if ( ! $form->handle() ) {
-			// Persist the invalid form state (errors and values).
 			$forms->persist( $form );
 		}
 
@@ -142,14 +152,69 @@ class Controller{
 	}
 
 	/**
-	 * Determine if the post contains any of our forms
+	 * Handle AJAX form submissions.
 	 *
-	 * @param  WP_Post  $post  The post to check
+	 * @return void
+	 */
+	public function ajax_handle(): void {
+		$method = strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' );
+		if ( 'POST' !== $method ) {
+			wp_send_json_error( [ 'message' => __( 'Method not allowed.', 'leira-auth' ) ], 405 );
+		}
+
+		$forms = $this->get_forms_factory();
+		if ( ! $forms ) {
+			wp_send_json_error( [ 'message' => __( 'Authentication forms are not available.', 'leira-auth' ) ], 500 );
+		}
+
+		$data      = is_array( $_POST ) ? wp_unslash( $_POST ) : [];
+		$form_type = $this->resolve_form_type( $data );
+		if ( '' === $form_type ) {
+			wp_send_json_error( [ 'message' => __( 'Missing form type.', 'leira-auth' ) ], 400 );
+		}
+
+		$form = $forms->create( $form_type, $data );
+		if ( ! $form ) {
+			wp_send_json_error( [ 'message' => __( 'Form not available.', 'leira-auth' ) ], 404 );
+		}
+
+		if ( ! $form->handle() ) {
+			wp_send_json_error(
+				[
+					'form'           => $form->name(),
+					'messages'       => $form->messages()->to_array(),
+					//'field_messages' => $this->field_messages( $form ),
+					'html'           => $this->renderer()->render( $form ),
+				],
+				422
+			);
+		}
+
+		$response = [
+			'form'     => $form->name(),
+			'messages' => $form->messages()->to_array(),
+		];
+
+		if ( method_exists( $form, 'redirect_url' ) ) {
+			$redirect = (string) $form->redirect_url();
+			if ( '' !== $redirect ) {
+				$response['redirect'] = $redirect;
+			}
+		}
+
+		$response = (array) apply_filters( 'leira_auth_ajax_success_response', $response, $form, $data );
+
+		wp_send_json_success( $response );
+	}
+
+	/**
+	 * Determine if the current post contains auth forms.
+	 *
+	 * @param  WP_Post  $post
 	 *
 	 * @return bool
 	 */
 	protected function post_contains_auth_form( WP_Post $post ): bool {
-		//Check shortcodes
 		if ( has_shortcode( $post->post_content, 'leira_auth' ) ) {
 			return true;
 		}
@@ -159,7 +224,6 @@ class Controller{
 			return false;
 		}
 
-		// Check blocks.
 		foreach ( array_keys( $forms->registry() ) as $name ) {
 			$block = 'leira-auth/' . $name;
 			if ( has_block( $block, $post ) ) {
@@ -171,11 +235,11 @@ class Controller{
 	}
 
 	/**
-	 * Filter the login URL to point to a custom login page.
+	 * Filter login URL to custom frontend page.
 	 *
-	 * @param  string  $login_url  The original login URL.
-	 * @param  string  $redirect  The redirect URL after login.
-	 * @param  bool  $force_reauth  Whether to force reauthentication.
+	 * @param  string  $login_url
+	 * @param  string  $redirect
+	 * @param  bool  $force_reauth
 	 *
 	 * @return string
 	 */
@@ -184,19 +248,19 @@ class Controller{
 			return $login_url;
 		}
 
-		$custom_url = apply_filters( 'leira_auth_login_url', site_url( 'login' ), $login_url, $redirect, $force_reauth );
+		$custom_url = apply_filters( 'leira_auth_login_url', site_url( 'login' ), $login_url, $redirect,
+			$force_reauth );
 
-		return is_string( $custom_url ) && ! empty( $custom_url ) ? $custom_url : $login_url;
+		return is_string( $custom_url ) && '' !== $custom_url ? $custom_url : $login_url;
 	}
 
 	/**
-	 * Get forms factory instance.
+	 * Resolve the forms factory.
 	 *
 	 * @return Factory|null
 	 */
 	protected function get_forms_factory(): ?Factory {
 		$forms = Plugin::instance()->forms;
-
 		if ( $forms instanceof Factory ) {
 			return $forms;
 		}
@@ -208,9 +272,9 @@ class Controller{
 	}
 
 	/**
-	 * Resolve the URL where we should return after submission.
+	 * Resolve return URL after the regular POST submission.
 	 *
-	 * @param  WP_Post  $post  Current singular post.
+	 * @param  WP_Post  $post
 	 *
 	 * @return string
 	 */
@@ -222,6 +286,89 @@ class Controller{
 
 		$permalink = get_permalink( $post );
 
-		return is_string( $permalink ) && ! empty( $permalink ) ? $permalink : home_url( '/' );
+		return is_string( $permalink ) && '' !== $permalink ? $permalink : home_url( '/' );
+	}
+
+	/**
+	 * Resolve form type from the submitted payload.
+	 *
+	 * @param  array<string, mixed>  $data
+	 *
+	 * @return string
+	 */
+	protected function resolve_form_type( array $data ): string {
+		$form_type = sanitize_key( (string) ( $data['_leira_auth_form'] ?? '' ) );
+		if ( '' !== $form_type ) {
+			return $form_type;
+		}
+
+		$action = sanitize_key( (string) ( $data['action'] ?? '' ) );
+		if ( 'leira_auth_submit' === $action ) {
+			return '';
+		}
+
+		return $action;
+	}
+
+	/**
+	 * Build field messages payload for AJAX responses.
+	 *
+	 * @param  FormContract  $form
+	 *
+	 * @return array<string, array<int, array{text: string, type: string}>>
+	 */
+	protected function field_messages( FormContract $form ): array {
+		$messages = [];
+		foreach ( $form->all() as $field ) {
+			if ( ! Field_Renderer::renders_errors_inline( $field ) ) {
+				continue;
+			}
+
+			if ( ! method_exists( $field, 'messages' ) || ! $field->messages()->has() ) {
+				continue;
+			}
+
+			$messages[ $field->name() ] = $field->messages()->to_array();
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * Resolve form renderer.
+	 *
+	 * @return Renderer
+	 */
+	protected function renderer(): Renderer {
+		if ( null === $this->form_renderer ) {
+			$this->form_renderer = new Renderer();
+		}
+
+		return $this->form_renderer;
+	}
+
+	/**
+	 * Register frontend AJAX helper script.
+	 *
+	 * @return void
+	 */
+	protected function register_frontend_script(): void {
+		wp_register_script(
+			'leira-auth-frontend',
+			plugin_dir_url( __FILE__ ) . 'js/leira-auth-frontend.js',
+			[],
+			defined( 'LEIRA_AUTH_VERSION' ) ? LEIRA_AUTH_VERSION : '1.0.0',
+			true
+		);
+
+		wp_localize_script(
+			'leira-auth-frontend',
+			'leiraAuthFrontend',
+			[
+				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'ajaxAction' => 'leira_auth_submit',
+				'errorText'  => __( 'Unable to submit the form right now.', 'leira-auth' ),
+			]
+		);
 	}
 }

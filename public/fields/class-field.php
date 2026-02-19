@@ -2,171 +2,170 @@
 
 namespace Leira_Auth\Public\Fields;
 
-use Leira_Auth\Public\Contracts\Field as Field_Interface;
-use Leira_Auth\Public\Contracts\Constraint;
-use Leira_Auth\Public\Contracts\Form;
+use Leira_Auth\Public\Form_Node;
 use Leira_Auth\Public\Constraints\Required;
-use Leira_Auth\Public\Contracts\Stateful;
-use Leira_Auth\Public\Messages\Bag;
+use Leira_Auth\Public\Forms\Form;
 use Leira_Auth\Public\Messages\Message;
-use RuntimeException;
 
 /**
- * The base implementation for the fields in a form
+ * Base field implementation.
  *
  * @since 1.0.0
  */
-abstract class Field implements Field_Interface{
+abstract class Field extends Form_Node{
 
 	/**
-	 * Field name.
+	 * Parent node.
 	 *
-	 * @var string
+	 * @var Form_Node|null
 	 */
-	protected string $name;
+	protected ?Form_Node $parent = null;
 
 	/**
-	 * The error detected when validating this field
+	 * Render priority.
 	 *
-	 * @var Bag
+	 * @var int
 	 */
-	protected Bag $messages;
+	protected int $priority = 10;
 
 	/**
-	 * The validators used to validate this field
+	 * Determine if the field form was submitted.
 	 *
-	 * @var Constraint[]
+	 * @var true
 	 */
-	protected array $constraints = [];
+	protected bool $submitted = false;
 
 	/**
-	 * The form this field belongs to
+	 * The raw data submitted
 	 *
-	 * @var Form|null
+	 * @var mixed
 	 */
-	protected ?Form $form = null;
+	protected mixed $raw = null;
 
 	/**
-	 * Class constructor
+	 * The transformed data
 	 *
-	 * @param  string  $name  The field name.
+	 * @var mixed
+	 */
+	protected mixed $value = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param  string  $name
 	 */
 	public function __construct( string $name ) {
-		$this->name     = $name;
-		$this->messages = new Bag();
+		parent::__construct( $name );
 	}
 
 	/**
-	 * Get the field name
-	 * @return string
+	 * Get the parent of this field.
+	 * It could be either a field, the form this field belongs to or null if not attached to any field form yet.
+	 *
+	 * @return Form_Node|null
 	 */
-	public function get_name(): string {
-		return $this->name;
+	public function get_parent(): ?Form_Node {
+		return $this->parent;
 	}
 
 	/**
-	 * Get the submitted value of the field
+	 * Get field value.
 	 *
 	 * @return mixed
 	 */
-	abstract public function get_value(): mixed;
-
-	/**
-	 * Set the field value
-	 *
-	 * @param  mixed  $value  The value to set
-	 *
-	 * @return self Returns the current instance for method chaining
-	 */
-	abstract public function set_value( mixed $value ): self;
-
-	/**
-	 * The default method to render the field
-	 *
-	 * @return string
-	 */
-	abstract public function render(): string;
-
-	/**
-	 * Get registered constraints.
-	 *
-	 * @return Constraint[]
-	 */
-	public function constraints(): array {
-		return $this->constraints;
+	public function value(): mixed {
+		return $this->value;
 	}
 
 	/**
-	 * Add a validator to the list of the field validations.
+	 * Return the raw value submitted
 	 *
-	 * @param  Constraint  $constraint
-	 *
-	 * @return $this
+	 * @return mixed
 	 */
-	public function constraint( Constraint $constraint ): self {
-		$this->constraints[] = $constraint;
-
-		return $this;
+	public function raw_value() {
+		return $this->raw;
 	}
 
 	/**
-	 * Get the errors from the validation process
+	 * Get the form this field belongs to.
 	 *
-	 * @return Bag
+	 * @return Form|null
 	 */
-	public function messages(): Bag {
-		return $this->messages;
-	}
-
-	/**
-	 * Get the form this field belongs to
-	 *
-	 * @return Form The parent form instance
-	 */
-	public function get_form(): Form {
-		if ( ! $this->form ) {
-			throw new RuntimeException( 'Field is not bound to a form.' );
+	public function get_form(): ?Form {
+		if ( $this->parent === null ) {
+			return null;
 		}
 
-		return $this->form;
+		return $this->parent instanceof Form ? $this->parent : $this->get_parent()->get_form();
 	}
 
 	/**
-	 * Set the form this field belongs to
+	 * Get render priority.
 	 *
-	 * @param  Form  $form  The parent form instance
-	 *
-	 * @return self Returns the current instance for method chaining
+	 * @return int
 	 */
-	public function set_form( Form $form ): self {
-		$this->form = $form;
+	public function priority(): int {
+		return $this->priority;
+	}
+
+	/**
+	 * Set render priority.
+	 *
+	 * @param  int  $priority
+	 *
+	 * @return self
+	 */
+	public function set_priority( int $priority ): self {
+		$this->priority = $priority;
 
 		return $this;
 	}
 
 	/**
-	 * Validate the field
+	 * Submit the form
 	 *
-	 * @param $value
+	 * @param  mixed  $value  The submitted value
+	 *
+	 * @return void
+	 */
+	public function submit( $value ): void {
+		// set field as submitted
+		$this->submitted = true;
+
+		// store raw field value
+		$this->raw = $value;
+
+		// process the value
+		foreach ( $this->sanitizers as $sanitizer ) {
+			$value = $sanitizer->process( $value, $this );
+		}
+
+		// store processed value
+		$this->value = $value;
+
+		// validate the value
+		$this->validate( $value );
+	}
+
+	/**
+	 * Validate field value.
+	 *
+	 * @param  mixed  $value
 	 *
 	 * @return bool
 	 */
 	public function validate( mixed $value ): bool {
-		$this->messages = new Bag();
-		$this->set_value( $value );
+		$this->messages()->clear();
 
-		$isEmpty = $value === null || $value === '' || ( is_array( $value ) && empty( $value ) );
-
-		// Optional field short-circuit
-		if ( $isEmpty && ! $this->is_required() ) {
+		$is_empty = null === $value || '' === $value || ( is_array( $value ) && empty( $value ) );
+		if ( $is_empty && ! $this->is_required() ) {
 			return true;
 		}
 
-		foreach ( $this->constraints as $constraint ) {
+		foreach ( $this->constraints() as $constraint ) {
 			$error = $constraint->validate( $value, $this );
-
 			if ( ! empty( $error ) ) {
-				$this->messages()->add( $error );
+				$this->messages()->add( $error, Message::ERROR );
 			}
 		}
 
@@ -174,75 +173,19 @@ abstract class Field implements Field_Interface{
 	}
 
 	/**
-	 * Export current field state.
-	 *
-	 * @return array
-	 */
-	public function state(): array {
-		return [
-			'value'    => $this->get_value(),
-			'messages' => $this->messages()->to_array(),
-		];
-	}
-
-	/**
-	 * Restore field state.
-	 *
-	 * @param  array  $state
-	 *
-	 * @return void
-	 */
-	public function restore( array $state ): void {
-		if ( array_key_exists( 'value', $state ) ) {
-			$this->set_value( $state['value'] );
-		}
-
-		$this->messages()->clear();
-
-		$messages = $state['messages'] ?? [];
-		if ( ! is_array( $messages ) ) {
-			return;
-		}
-
-		foreach ( $messages as $message ) {
-			if ( is_array( $message ) ) {
-				$text = isset( $message['text'] ) ? (string) $message['text'] : '';
-				if ( '' === $text ) {
-					continue;
-				}
-				$type = isset( $message['type'] ) ? (string) $message['type'] : Message::ERROR;
-				$this->messages()->add( $text, $type );
-				continue;
-			}
-
-			if ( is_string( $message ) && '' !== $message ) {
-				$this->messages()->add( $message, Message::ERROR );
-			}
-		}
-	}
-
-	/**
-	 * Whether this field should display validation errors inline.
-	 *
-	 * @return bool
-	 */
-	public function should_render_errors_inline(): bool {
-		return true;
-	}
-
-	/**
-	 * Determine if the field is required.
-	 * We check if a "Required" constraint exists for this field.
+	 * Determine whether a field has a Required constraint.
 	 *
 	 * @return bool
 	 */
 	protected function is_required(): bool {
-		foreach ( $this->constraints as $validator ) {
-			if ( $validator instanceof Required ) {
+		//Todo: could be improved
+		foreach ( $this->constraints() as $constraint ) {
+			if ( $constraint instanceof Required ) {
 				return true;
 			}
 		}
 
 		return false;
 	}
+
 }

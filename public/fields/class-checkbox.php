@@ -3,50 +3,19 @@
 namespace Leira_Auth\Public\Fields;
 
 /**
- * A checkbox input element.
+ * Checkbox field.
  *
  * @since 1.0.0
  */
-class Checkbox extends Input{
+class Checkbox extends Field{
 
 	/**
-	 * Default text input attributes
-	 * @var array|string[]
-	 */
-	protected array $attributes = [
-		'type' => 'checkbox'
-	];
-
-	/**
-	 * Render the input group with its label and description.
+	 * Checkbox field constructor
 	 *
-	 * @return string
+	 * @param $name
 	 */
-	public function render(): string {
-		$html = [];
-
-		//Group
-		$html[] = '<div class="field-' . esc_attr( $this->get_name() ) . '">';
-		$html[] = '<div class="form-check">';
-
-		// Input
-		$html[] = $this->render_input();
-
-		// Label
-		$html[] = $this->render_label();
-
-		// Errors
-		$html[] = $this->render_errors();
-
-		// Description
-		$html[] = $this->render_description();
-
-		$html [] = '</div>';
-		$html [] = '</div>';
-
-		$html = array_filter( $html, 'trim' );
-		$html = array_filter( $html );
-
-		return implode( PHP_EOL, $html );
+	public function __construct( $name ) {
+		parent::__construct( $name );
+		$this->options->set( 'type', 'checkbox' );
 	}
 }

@@ -3,16 +3,20 @@
 namespace Leira_Auth\Public\Fields;
 
 /**
- * Class that represents a text input
+ * Text field.
+ *
  * @since 1.0.0
  */
-class Text extends Input{
+class Text extends Field{
 
 	/**
-	 * Default text input attributes
-	 * @var array|string[]
+	 * Text field constructor
+	 *
+	 * @param $name
 	 */
-	protected array $attributes = [
-		'type' => 'text'
-	];
+	public function __construct( $name ) {
+		parent::__construct( $name );
+		$this->options->set( 'type', 'text' );
+	}
+
 }
