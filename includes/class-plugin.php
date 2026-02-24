@@ -145,8 +145,6 @@ class Plugin{
 		add_action( 'wp_ajax_nopriv_leira_auth_submit', array( $controller, 'ajax_handle' ) );
 		//one shortcode to rule them all
 		add_shortcode( 'leira_auth', array( $controller, 'shortcode' ) );
-		//Change login URL for frontend.
-		add_filter( 'login_url', array( $controller, 'login_url' ), 10, 3 );
 
 		/**
 		 * Custom URL handling
@@ -162,8 +160,8 @@ class Plugin{
 		add_filter( 'logout_url', [ $url_controller, 'logout_url' ], 10, 2 );
 		// Filter reset password email links
 		add_filter( 'retrieve_password_message', [ $url_controller, 'retrieve_password_message' ], 10, 4 );
-
-
+		// Filter profile url
+		add_filter( 'edit_profile_url', [ $url_controller, 'edit_profile_url' ], 10, 3 );
 
 
 //		$plugin_public = new Leira_Auth_Public( $this->get_plugin_name(), $this->get_version() );

@@ -2,6 +2,7 @@
 
 namespace Leira_Auth\Public\Forms;
 
+use Leira_Auth\Public\Fields\Hidden;
 use Leira_Auth\Public\Form_Node;
 use Leira_Auth\Public\Messages\Message;
 
@@ -27,6 +28,10 @@ class Form extends Form_Node{
 	public function __construct( string $name ) {
 		parent::__construct( $name );
 		$this->clear();
+
+		$action = new Hidden( 'action' );
+		$action->options()->set( 'input_attr', [ 'value' => $name ] );
+		$this->add( $action );
 	}
 
 	/**
@@ -36,9 +41,7 @@ class Form extends Form_Node{
 	 *
 	 * @return void
 	 */
-	public function build( array $options ): void {
-
-	}
+	public function build( array $options ): void {}
 
 	/**
 	 * Return field values.
@@ -61,9 +64,7 @@ class Form extends Form_Node{
 	 *
 	 * @return void
 	 */
-	public function fill( $data ) {
-
-	}
+	public function fill( $data ) {}
 
 	/**
 	 * Validate submitted payload.
@@ -107,12 +108,11 @@ class Form extends Form_Node{
 		$data  = is_array( $_POST ) ? wp_unslash( $_POST ) : [];
 		$valid = $this->validate( $data );
 		if ( ! $valid && ! $this->messages()->has() ) {
-			$this->messages()->add( __( 'Please fix the errors below.', 'leira-auth' ), Message::ERROR );
+			$this->messages()->add( new Message( __( 'Please fix the errors below.', 'leira-auth' ) ) );
 		}
 
 		return $valid;
 	}
-
 
 	/**
 	 * Submit the form.
@@ -133,5 +133,103 @@ class Form extends Form_Node{
 			$value = $values[ $name ] ?? null;
 			$child->submit( $value );
 		}
+	}
+
+	/**
+	 * Export a current form snapshot
+	 *
+	 * @return array
+	 */
+	public function snapshot() {
+		//form messages
+		$messages = [];
+		foreach ( $this->messages() as $message ) {
+			$messages[] = [
+				'text' => $message->text(),
+				'type' => $message->type(),
+			];
+		}
+		// form fields
+		$fields = [];
+		foreach ( $this->all() as $field ) {
+			foreach ( $field->messages() as $message ) {
+				$is_restorable = (bool) $field->options()->get( 'restorable', false );
+				if ( $is_restorable ) {
+					$fields[ $field->name() ]['value'] = $field->value();
+				}
+				$fields[ $field->name() ]['messages'][] = [
+					'text' => $message->text(),
+					'type' => $message->type(),
+				];
+			}
+		}
+
+		return compact( 'messages', 'fields' );
+	}
+
+	/**
+	 * Restore a previous version of the form
+	 *
+	 * @param  array  $data
+	 *
+	 * @return void
+	 */
+	public function restore( $data ) {
+		//Convert array to messages
+		$array_to_messages = function ( $messages, $data ) {
+			if ( is_array( $data ) ) {
+				foreach ( $data as $value ) {
+					$text = $value['text'] ?? '';
+					if ( empty( $text ) ) {
+						continue;
+					}
+					$type = $value['type'] ?? Message::ERROR;
+					$type = is_string( $type ) ? strtolower( $type ) : Message::ERROR;
+					if ( ! in_array( $type, [ Message::ERROR, Message::SUCCESS ] ) ) {
+						$type = Message::ERROR;;
+					}
+					$messages->add( new Message( $text, $type ) );
+				}
+			}
+		};
+
+		//restore form messages
+		$messages = $data['messages'] ?? [];
+		$array_to_messages( $this->messages(), $messages );
+
+		//Restore field messages
+		$fields = $data['fields'] ?? [];;
+		foreach ( $fields as $key => $value ) {
+			$field = $this->get( $key );
+			if ( ! $field ) {
+				continue;
+			}
+			$is_restorable = (bool) $field->options()->get( 'restorable', false );
+			if ( $is_restorable ) {
+				$input_attr = $field->options()->get( 'input_attr', [] );
+				$field->options()->set( 'input_attr', $input_attr['value'] = $value );
+			}
+			$array_to_messages( $field->messages(), $value['messages'] ?? '' );
+		}
+	}
+
+	/**
+	 * Determine if the current form is ajax
+	 *
+	 * @return bool
+	 */
+	public function is_ajax() {
+		return (bool) $this->options()->get( 'ajax', false );
+	}
+
+	/**
+	 * Set form ajax option
+	 *
+	 * @param  bool  $value  If the form is ajax enabled or not
+	 *
+	 * @return void
+	 */
+	public function ajax( $value = true ) {
+		$this->options()->set( 'ajax', $value );
 	}
 }

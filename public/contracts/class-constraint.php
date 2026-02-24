@@ -2,6 +2,8 @@
 
 namespace Leira_Auth\Public\Contracts;
 
+use Leira_Auth\Public\Fields\Field;
+
 /**
  * Constraint interface
  *

@@ -37,6 +37,7 @@ class Pages extends Tab{
 			'lost_password'  => __( 'Lost Password Page', 'leira-auth' ),
 			'reset_password' => __( 'Reset Password Page', 'leira-auth' ),
 			'logout'         => __( 'Logout Page', 'leira-auth' ),
+			'profile'         => __( 'Profile Page', 'leira-auth' ),
 		);
 
 		foreach ( $fields as $key => $label ) {

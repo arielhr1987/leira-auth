@@ -7,6 +7,18 @@
 	"icon": "lock",
 	"description": "Displays a login form with configurable options.",
 	"textdomain": "leira-auth",
+	"supports": {
+		"className": true
+	},
+	"editorScript": "file:../../build/login.js",
+	"style": [
+		"wp-block-library",
+		"file:../build/forms.css"
+	],
+	"editorStyle": [
+		"wp-block-library",
+		"file:../build/forms.css"
+	],
 	"attributes": {
 		"redirect": {
 			"type": "string",
@@ -120,7 +132,5 @@
 			"type": "string",
 			"default": ""
 		}
-	},
-	"editorScript": "file:../../build/login.js",
-	"style": "file:../build/login.css"
+	}
 }

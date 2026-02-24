@@ -2,9 +2,6 @@
 
 namespace Leira_Auth\Public\Forms;
 
-use Leira_Auth\Public\Contracts\Stateful;
-use Leira_Auth\Public\Fields\Password;
-
 /**
  * Form factory.
  *
@@ -82,68 +79,5 @@ class Factory{
 		do_action( 'leira_auth_form_built', $form, $type );
 
 		return $form;
-	}
-
-	/**
-	 * Restore previously submitted form values from flash.
-	 *
-	 * @param  Form  $form
-	 *
-	 * @return void
-	 */
-	public function restore( Form $form ): void {
-		if ( ! $form instanceof Stateful ) {
-			return;
-		}
-
-		$flash = leira_auth()->flash;
-		if ( ! $flash ) {
-			return;
-		}
-
-		$data = $flash->get( 'leira-auth', [] );
-		if ( ! is_array( $data ) ) {
-			return;
-		}
-
-		$form->restore( $data );
-	}
-
-	/**
-	 * Persist submitted form state into flash.
-	 *
-	 * @param  Form  $form
-	 *
-	 * @return void
-	 */
-	public function persist( Form $form ): void {
-		if ( ! $form instanceof Stateful ) {
-			return;
-		}
-
-		$flash = leira_auth()->flash;
-		if ( ! $flash ) {
-			return;
-		}
-
-		$data = $form->state();
-		if ( ! is_array( $data ) ) {
-			return;
-		}
-
-		$fields_state = $data['fields'] ?? [];
-		if ( ! is_array( $fields_state ) ) {
-			$fields_state = [];
-		}
-
-		// Do not persist sensitive fields.
-		foreach ( $form->all() as $field ) {
-			if ( $field instanceof Password ) {
-				unset( $fields_state[ $field->name() ] );
-			}
-		}
-		$data['fields'] = $fields_state;
-
-		$flash->add( 'leira-auth', $data );
 	}
 }

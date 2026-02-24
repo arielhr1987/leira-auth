@@ -67,7 +67,7 @@ class Login extends Form{
 			         'class'        => (string) ( $options['username_class'] ?? '' ),
 			         'autocomplete' => 'username',
 			         'placeholder'  => (string) ( $options['username_placeholder'] ?? '' ),
-			         'required'     => true
+			         //'required'     => true
 		         ] );
 		$this->add( $username );
 
@@ -82,7 +82,7 @@ class Login extends Form{
 			         'class'        => (string) ( $options['password_class'] ?? '' ),
 			         'autocomplete' => 'current-password',
 			         'placeholder'  => (string) ( $options['password_placeholder'] ?? '' ),
-			         'required'     => true
+			         //'required'     => true
 		         ] );
 		$this->add( $password );
 

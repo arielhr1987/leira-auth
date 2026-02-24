@@ -83,12 +83,19 @@ class Flash{
 	/**
 	 * Add flash data (written for NEXT request)
 	 *
-	 * @param  string  $key  The key
+	 * @param  string|array  $key  The key
 	 * @param  mixed  $value  The value to store
 	 *
 	 * @return void
 	 */
-	public function add( string $key, mixed $value ): void {
+	public function add( string|array $key, mixed $value = null ): void {
+		if ( is_array( $key ) ) {
+			foreach ( $key as $k => $v ) {
+				$this->add( $k, $v );
+			}
+
+			return;
+		}
 		$this->data[ $key ] = $value;
 		$this->persist();
 	}

@@ -3,9 +3,7 @@
 namespace Leira_Auth\Public;
 
 use Leira_Auth\Includes\Plugin;
-use Leira_Auth\Public\Contracts\Form as FormContract;
 use Leira_Auth\Public\Forms\Factory;
-use Leira_Auth\Public\Renderers\Field_Renderer;
 use Leira_Auth\Public\Renderers\Renderer;
 use WP_Block;
 use WP_Post;
@@ -50,12 +48,15 @@ class Controller{
 		$this->register_frontend_script();
 
 		$block = plugin_dir_path( __DIR__ ) . 'blocks/login/block.json';
-		register_block_type(
-			$block,
-			[
-				'render_callback' => [ $this, 'shortcode' ],
-			]
-		);
+		register_block_type( $block, [
+			'render_callback' => [ $this, 'shortcode' ],
+		] );
+
+//		register_block_style( 'leira-auth/login', [
+//			'name'         => 'neon-glow',
+//			'label'        => __( 'Neon Glow', 'my-plugin' ),
+//			'inline_style' => '.is-style-neon-glow { box-shadow: 0 0 10px cyan; }',
+//		] );
 	}
 
 	/**
@@ -68,7 +69,9 @@ class Controller{
 	 * @return string
 	 */
 	public function shortcode( $attributes = [], $content = '', $block = null ): string {
+		// Get the form factory
 		$forms = $this->get_forms_factory();
+		// Form factory not found
 		if ( ! $forms ) {
 			return __( 'Authentication forms are not available.', 'leira-auth' );
 		}
@@ -85,21 +88,28 @@ class Controller{
 			$form_type  = sanitize_key( (string) $form_type );
 		}
 
+		// No form type was specified
 		if ( '' === $form_type ) {
 			return __( 'You must provide an action attribute in your "leira_auth" shortcode.', 'leira-auth' );
 		}
 
+		// Create the form
 		$form = $forms->create( $form_type, is_array( $attributes ) ? $attributes : [] );
 		if ( ! $form ) {
 			return __( 'Form not available.', 'leira-auth' );
 		}
 
-		$forms->restore( $form );
+		// Restore the plugin to previous state
+		$form->restore( Plugin::instance()->flash->all() );
 
-		if ( method_exists( $form, 'ajax_enabled' ) && $form->ajax_enabled() ) {
-			wp_enqueue_script( 'leira-auth-frontend' );
+		// Enqueue form styles
+//		wp_enqueue_style( 'leira-auth-forms-css' );
+		if ( method_exists( $form, 'is_ajax' ) && $form->is_ajax() ) {
+			// Enqueue form js
+			wp_enqueue_script( 'leira-auth-forms-js' );
 		}
 
+		// Render the form
 		return $this->renderer()->render( $form );
 	}
 
@@ -144,7 +154,8 @@ class Controller{
 		}
 
 		if ( ! $form->handle() ) {
-			$forms->persist( $form );
+			$snapshot = $form->snapshot();
+			Plugin::instance()->flash->add( $snapshot );
 		}
 
 		wp_safe_redirect( $this->get_return_url( $post ) );
@@ -181,10 +192,10 @@ class Controller{
 		if ( ! $form->handle() ) {
 			wp_send_json_error(
 				[
-					'form'           => $form->name(),
-					'messages'       => $form->messages()->to_array(),
+					'form'     => $form->name(),
+					'messages' => $form->messages()->to_array(),
 					//'field_messages' => $this->field_messages( $form ),
-					'html'           => $this->renderer()->render( $form ),
+					'html'     => $this->renderer()->render( $form ),
 				],
 				422
 			);
@@ -232,26 +243,6 @@ class Controller{
 		}
 
 		return false;
-	}
-
-	/**
-	 * Filter login URL to custom frontend page.
-	 *
-	 * @param  string  $login_url
-	 * @param  string  $redirect
-	 * @param  bool  $force_reauth
-	 *
-	 * @return string
-	 */
-	public function login_url( string $login_url, string $redirect, bool $force_reauth ): string {
-		if ( is_admin() || isset( $_REQUEST['interim-login'] ) ) {
-			return $login_url;
-		}
-
-		$custom_url = apply_filters( 'leira_auth_login_url', site_url( 'login' ), $login_url, $redirect,
-			$force_reauth );
-
-		return is_string( $custom_url ) && '' !== $custom_url ? $custom_url : $login_url;
 	}
 
 	/**
@@ -311,30 +302,6 @@ class Controller{
 	}
 
 	/**
-	 * Build field messages payload for AJAX responses.
-	 *
-	 * @param  FormContract  $form
-	 *
-	 * @return array<string, array<int, array{text: string, type: string}>>
-	 */
-	protected function field_messages( FormContract $form ): array {
-		$messages = [];
-		foreach ( $form->all() as $field ) {
-			if ( ! Field_Renderer::renders_errors_inline( $field ) ) {
-				continue;
-			}
-
-			if ( ! method_exists( $field, 'messages' ) || ! $field->messages()->has() ) {
-				continue;
-			}
-
-			$messages[ $field->name() ] = $field->messages()->to_array();
-		}
-
-		return $messages;
-	}
-
-	/**
 	 * Resolve form renderer.
 	 *
 	 * @return Renderer
@@ -353,16 +320,34 @@ class Controller{
 	 * @return void
 	 */
 	protected function register_frontend_script(): void {
+		$asset_file = LEIRA_AUTH_PATH . '/build/forms.asset.php';
+		$asset      = file_exists( $asset_file ) ? include $asset_file : [
+			'dependencies' => [],
+			'version'      => LEIRA_AUTH_VERSION ?? '1.0.0'
+		];
+
 		wp_register_script(
-			'leira-auth-frontend',
-			plugin_dir_url( __FILE__ ) . 'js/leira-auth-frontend.js',
-			[],
-			defined( 'LEIRA_AUTH_VERSION' ) ? LEIRA_AUTH_VERSION : '1.0.0',
+			'leira-auth-forms-js',
+			LEIRA_AUTH_URL . 'build/forms.js',
+			$asset['dependencies'],
+			$asset['version'],
 			true
 		);
 
+		wp_register_style(
+			'leira-auth-forms-css',
+			LEIRA_AUTH_URL . 'build/forms.css',
+			[ 'wp-block-library' ],
+			$asset['version'],
+		);
+
+		// Ensure WordPress global + block button styles are available on the frontend
+		if ( ! wp_style_is( 'wp-block-library', 'registered' ) ) {
+			wp_register_style( 'wp-block-library', includes_url( 'css/dist/block-library/style.min.css' ), [], null );
+		}
+
 		wp_localize_script(
-			'leira-auth-frontend',
+			'leira-auth-forms-js',
 			'leiraAuthFrontend',
 			[
 				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),

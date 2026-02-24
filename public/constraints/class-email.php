@@ -2,8 +2,7 @@
 
 namespace Leira_Auth\Public\Constraints;
 
-use Leira_Auth\Public\Contracts\Form;
-use Leira_Auth\Public\Contracts\Field;
+use Leira_Auth\Public\Fields\Field;
 
 /**
  * Validator to determine if a field is a valid email address

@@ -26,7 +26,9 @@ class Renderer implements Renderer_Interface{
 			'action' => $form->options()->get( 'action' )
 		] );
 
-		$html = '<form ' . $this->render_attr( $attr ) . '>';
+		$html = '<div class="leira-auth">';
+		$html = '<div ' . get_block_wrapper_attributes() . '>';
+		$html .= '<form ' . $this->render_attr( $attr ) . '>';
 
 		// WordPress nonce if your form supports it later
 		//TODO: include automatically via fields
@@ -34,7 +36,7 @@ class Renderer implements Renderer_Interface{
 
 		// Top-level messages (form errors)
 		foreach ( $form->messages()->all() as $msg ) {
-			$html .= '<div class="leira-form-error">' . esc_html( $msg ) . '</div>';
+			$html .= '<div class="leira-form-error">' . esc_html( $msg->text() ) . '</div>';
 		}
 
 		// Fields
@@ -43,6 +45,7 @@ class Renderer implements Renderer_Interface{
 		}
 
 		$html .= '</form>';
+		$html .= '</div>';
 
 		return apply_filters(
 			'leira_auth_render_form',
@@ -63,10 +66,10 @@ class Renderer implements Renderer_Interface{
 		$type = $field->options()->get( 'type' );
 
 		$html = match ( $type ) {
-			'checkbox' => $this->renderCheckbox( $field ),
-			'hidden' => $this->renderHidden( $field ),
-			'submit' => $this->renderSubmit( $field ),
-			default => $this->renderInput( $field ),
+			'checkbox' => $this->render_checkbox( $field ),
+			'hidden' => $this->render_hidden( $field ),
+			'submit' => $this->render_submit( $field ),
+			default => $this->render_input( $field ),
 		};
 
 		return apply_filters( 'leira_auth_render_field', $html, $field, $this );
@@ -79,7 +82,7 @@ class Renderer implements Renderer_Interface{
 	 *
 	 * @return string
 	 */
-	protected function renderInput( Field $field ): string {
+	protected function render_input( Field $field ): string {
 		$attr = $field->options()->get( 'input_attr', [] );
 
 		$attr['id']   = $attr['id'] ?? $field->value();
@@ -114,7 +117,7 @@ class Renderer implements Renderer_Interface{
 	 *
 	 * @return string
 	 */
-	protected function renderCheckbox( Field $field ): string {
+	protected function render_checkbox( Field $field ): string {
 		$attr = $field->options()->get( 'input_attr', [] );
 
 		$attr['type'] = 'checkbox';
@@ -153,7 +156,7 @@ class Renderer implements Renderer_Interface{
 	 *
 	 * @return string
 	 */
-	protected function renderHidden( Field $field ): string {
+	protected function render_hidden( Field $field ): string {
 		$attr = $field->options()->get( 'input_attr', [] );
 
 		$attr['type'] = 'hidden';
@@ -173,17 +176,24 @@ class Renderer implements Renderer_Interface{
 	 *
 	 * @return string
 	 */
-	protected function renderSubmit( Field $field ): string {
+	protected function render_submit( Field $field ): string {
 		$attr = $field->options()->get( 'input_attr', [] );
 
-		$attr['type'] = 'submit';
-		$attr['name'] = $field->name();
+		$attr['type']  = 'submit';
+		$attr['name']  = $field->name();
+		$attr['class'] = ( $attr['class'] ?? '' ) . ' wp-block-button__link wp-element-button';
 
 		if ( ! isset( $attr['value'] ) ) {
 			$attr['value'] = __( 'Submit', 'leira-auth' );
 		}
 
-		return '<div class="leira-form-row">' . '<input ' . $this->render_attr( $attr ) . '>' . '</div>';
+		$html = [
+			'<div class="wp-block-button">',
+			'<button ' . $this->render_attr( $attr ) . '/>Submit</button>',
+			'</div>',
+		];
+
+		return implode( PHP_EOL, $html );
 	}
 
 	/**
@@ -197,7 +207,8 @@ class Renderer implements Renderer_Interface{
 		$html = '';
 
 		foreach ( $field->messages() as $err ) {
-			$html .= '<div class="leira-field-error">' . esc_html( $err ) . '</div>';
+			$html .= '<div class="wp-block-group has-background" role="alert"><p>' . esc_html( $err->text() ) . '</p></div>';
+//			$html .= '<div>' . esc_html( $err->text() ) . '</div>';
 		}
 
 		return $html;

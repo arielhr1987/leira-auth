@@ -165,7 +165,7 @@ abstract class Field extends Form_Node{
 		foreach ( $this->constraints() as $constraint ) {
 			$error = $constraint->validate( $value, $this );
 			if ( ! empty( $error ) ) {
-				$this->messages()->add( $error, Message::ERROR );
+				$this->messages()->add( new Message( $error ) );
 			}
 		}
 

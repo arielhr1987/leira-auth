@@ -31,16 +31,16 @@ class Url_Controller{
 	 * Reads the stored page ID from plugin options, resolves the permalink,
 	 * and caches the result for subsequent calls.
 	 *
-	 * @param string $name Auth action key (login, register, lost_password, logout, etc.)
+	 * @param  string  $name  Auth action key (login, register, lost_password, logout, etc.)
 	 *
 	 * @return string|false Page URL string when configured, false otherwise.
 	 */
 	protected function get_page_url( $name ) {
-		if ( $this->pages[ $name ] ) {
+		if ( isset( $this->pages[ $name ] ) ) {
 			return $this->pages[ $name ];
 		}
 
-		$option = get_option( 'leira_auth_page_', $name );
+		$option = get_option( 'leira_auth_page_' . $name );
 		if ( empty( $option ) ) {
 			return false;
 		}
@@ -91,6 +91,17 @@ class Url_Controller{
 	}
 
 	/**
+	 * Gets the configured profile page URL.
+	 *
+	 * @return string|false
+	 */
+	public function get_profile_url() {
+		return $this->get_page_url( 'profile' );
+	}
+
+	/**
+	 *
+	 * /**
 	 * Determines whether the current request is a frontend context.
 	 *
 	 * Prevents URL overrides inside wp-admin or wp-login.php
@@ -116,8 +127,8 @@ class Url_Controller{
 	/**
 	 * Adds a redirect_to query parameter to a URL when provided.
 	 *
-	 * @param string|null $url      Base URL.
-	 * @param string|null $redirect Redirect destination.
+	 * @param  string|null  $url  Base URL.
+	 * @param  string|null  $redirect  Redirect destination.
 	 *
 	 * @return string Modified URL, or empty string if base URL missing.
 	 */
@@ -136,13 +147,18 @@ class Url_Controller{
 	/**
 	 * Filters the WordPress login URL.
 	 *
-	 * @param string      $login_url    Default login URL.
-	 * @param string|null $redirect     Optional redirect target.
-	 * @param bool        $force_reauth Whether re-authentication is required.
+	 * @param  string  $login_url  Default login URL.
+	 * @param  string|null  $redirect  Optional redirect target.
+	 * @param  bool  $force_reauth  Whether re-authentication is required.
 	 *
 	 * @return string Modified login URL.
 	 */
 	public function login_url( $login_url, $redirect, $force_reauth ) {
+		if ( is_admin() || isset( $_REQUEST['interim-login'] ) ) {
+			//Redundant
+			return $login_url;
+		}
+
 		if ( ! $this->is_frontend() ) {
 			return $login_url;
 		}
@@ -164,7 +180,7 @@ class Url_Controller{
 	/**
 	 * Filters the WordPress registration URL.
 	 *
-	 * @param string $register_url Default registration URL.
+	 * @param  string  $register_url  Default registration URL.
 	 *
 	 * @return string Modified registration URL.
 	 */
@@ -179,8 +195,8 @@ class Url_Controller{
 	/**
 	 * Filters the WordPress lost password URL.
 	 *
-	 * @param string      $lost_url Default lost password URL.
-	 * @param string|null $redirect Optional redirect target.
+	 * @param  string  $lost_url  Default lost password URL.
+	 * @param  string|null  $redirect  Optional redirect target.
 	 *
 	 * @return string Modified lost password URL.
 	 */
@@ -202,8 +218,8 @@ class Url_Controller{
 	 *
 	 * Ensures nonce protection is preserved when using a custom logout page.
 	 *
-	 * @param string      $logout_url Default logout URL.
-	 * @param string|null $redirect   Optional redirect target.
+	 * @param  string  $logout_url  Default logout URL.
+	 * @param  string|null  $redirect  Optional redirect target.
 	 *
 	 * @return string Modified logout URL.
 	 */
@@ -237,10 +253,10 @@ class Url_Controller{
 	 * Replaces the default wp-login.php?action=rp link with the configured
 	 * frontend reset password page while preserving the reset key and login.
 	 *
-	 * @param string  $message    Email message body.
-	 * @param string  $key        Password reset key.
-	 * @param string  $user_login User login name.
-	 * @param WP_User $user_data  User object.
+	 * @param  string  $message  Email message body.
+	 * @param  string  $key  Password reset key.
+	 * @param  string  $user_login  User login name.
+	 * @param  WP_User  $user_data  User object.
 	 *
 	 * @return string Modified email message.
 	 */
@@ -263,5 +279,29 @@ class Url_Controller{
 		$message = preg_replace( '#https?:\/\/[^\s]*wp-login\.php\?action=rp[^\s]*#', $reset_link, $message );
 
 		return $message;
+	}
+
+	/** Filters the user profile/edit URL on the frontend.
+	 *
+	 * Replaces the default wp-admin profile.php link with a configured
+	 * frontend profile page when available.
+	 *
+	 * @param  string  $url  Default profile URL.
+	 * @param  int  $user_id  User ID.
+	 * @param  string  $scheme  URL scheme.
+	 *
+	 * @return string Modified profile URL.
+	 */
+	public function edit_profile_url( $url, $user_id, $scheme ) {
+		if ( ! $this->is_frontend() ) {
+			return $url;
+		}
+
+		$profile = $this->get_profile_url();
+		if ( ! $profile ) {
+			return $url;
+		}
+
+		return $profile;
 	}
 }

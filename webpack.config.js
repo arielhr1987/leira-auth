@@ -5,6 +5,7 @@ module.exports = {
 	entry: {
 		"index": './src/index.js',
 		"login": './src/login.js',
+		"forms": './src/forms.js',
 		// "inline-edit-roles": './src/inline-edit-roles.js',
 		// "inline-edit-user-capabilities": './src/inline-edit-user-capabilities.js',
 		// "roles-admin": './src/roles-admin.js',
