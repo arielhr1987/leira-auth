@@ -32,6 +32,10 @@ class Form extends Form_Node{
 		$action = new Hidden( 'action' );
 		$action->options()->set( 'input_attr', [ 'value' => $name ] );
 		$this->add( $action );
+
+		$form_type = new Hidden( '_leira_auth_form' );
+		$form_type->options()->set( 'input_attr', [ 'value' => $name ] );
+		$this->add( $form_type );
 	}
 
 	/**

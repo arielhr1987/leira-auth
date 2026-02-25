@@ -102,8 +102,8 @@ class Controller{
 		// Restore the plugin to previous state
 		$form->restore( Plugin::instance()->flash->all() );
 
-		// Enqueue form styles
-//		wp_enqueue_style( 'leira-auth-forms-css' );
+		// Enqueue shared form styles for both shortcodes and dynamic blocks.
+		wp_enqueue_style( 'leira-auth-forms-css' );
 		if ( method_exists( $form, 'is_ajax' ) && $form->is_ajax() ) {
 			// Enqueue form js
 			wp_enqueue_script( 'leira-auth-forms-js' );
@@ -337,14 +337,9 @@ class Controller{
 		wp_register_style(
 			'leira-auth-forms-css',
 			LEIRA_AUTH_URL . 'build/forms.css',
-			[ 'wp-block-library' ],
+			[ 'wp-block-library', 'wp-block-button', 'wp-block-buttons' ],
 			$asset['version'],
 		);
-
-		// Ensure WordPress global + block button styles are available on the frontend
-		if ( ! wp_style_is( 'wp-block-library', 'registered' ) ) {
-			wp_register_style( 'wp-block-library', includes_url( 'css/dist/block-library/style.min.css' ), [], null );
-		}
 
 		wp_localize_script(
 			'leira-auth-forms-js',

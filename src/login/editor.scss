@@ -1,0 +1,10 @@
+.leira-auth-form {
+	* {
+		pointer-events: none;
+	}
+
+	.leira-auth-form .block-editor-warning * {
+		pointer-events: auto;
+	}
+}
+

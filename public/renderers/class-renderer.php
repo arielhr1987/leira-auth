@@ -20,14 +20,15 @@ class Renderer implements Renderer_Interface{
 	 */
 	public function render( Form $form ): string {
 		$attr = array_filter( [
-			'method' => 'post',
-			'id'     => $form->options()->get( 'id' ),
-			'class'  => $form->options()->get( 'class' ),
-			'action' => $form->options()->get( 'action' )
+			'method'               => 'post',
+			'id'                   => $form->options()->get( 'id' ),
+			'class'                => $form->options()->get( 'class' ),
+			'action'               => $form->options()->get( 'action' ),
+			'data-leira-auth-ajax' => $form->is_ajax() ? '1' : null,
 		] );
 
 		$html = '<div class="leira-auth">';
-		$html = '<div ' . get_block_wrapper_attributes() . '>';
+		$html .= '<div ' . get_block_wrapper_attributes() . '>';
 		$html .= '<form ' . $this->render_attr( $attr ) . '>';
 
 		// WordPress nonce if your form supports it later
@@ -45,6 +46,7 @@ class Renderer implements Renderer_Interface{
 		}
 
 		$html .= '</form>';
+		$html .= '</div>';
 		$html .= '</div>';
 
 		return apply_filters(
@@ -181,15 +183,20 @@ class Renderer implements Renderer_Interface{
 
 		$attr['type']  = 'submit';
 		$attr['name']  = $field->name();
-		$attr['class'] = ( $attr['class'] ?? '' ) . ' wp-block-button__link wp-element-button';
+		$attr['class'] = trim( (string) ( $attr['class'] ?? '' ) . ' wp-block-button__link wp-element-button' );
 
-		if ( ! isset( $attr['value'] ) ) {
-			$attr['value'] = __( 'Submit', 'leira-auth' );
+		$label = (string) $field->options()->get( 'label', '' );
+		if ( '' === $label ) {
+			$label = isset( $attr['value'] ) ? (string) $attr['value'] : __( 'Submit', 'leira-auth' );
 		}
 
+		$group_class = trim( (string) $field->options()->get( 'group_class', 'wp-block-button' ) );
+		if ( '' === $group_class ) {
+			$group_class = 'wp-block-button';
+		}
 		$html = [
-			'<div class="wp-block-button">',
-			'<button ' . $this->render_attr( $attr ) . '/>Submit</button>',
+			'<div class="' . esc_attr( $group_class ) . '">',
+			'<button ' . $this->render_attr( $attr ) . '>' . esc_html( $label ) . '</button>',
 			'</div>',
 		];
 

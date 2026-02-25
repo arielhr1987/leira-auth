@@ -148,7 +148,7 @@ registerBlockType('leira-auth/forgot-password', {
 						<ToggleControl
 							label={__('Show register link', 'login-auth')}
 							checked={attributes.show_register}
-							onChange={(value) => setAttributes({show_forgot_password: value})}
+							onChange={(value) => setAttributes({show_register: value})}
 						/>
 						<TextControl
 							label={__('Register link label', 'login-auth')}
@@ -170,5 +170,3 @@ registerBlockType('leira-auth/forgot-password', {
 	 */
 	save: () => null, // Dynamic block
 });
-
-

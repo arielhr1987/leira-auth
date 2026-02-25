@@ -1,0 +1,95 @@
+:where(.leira-auth-form) {
+	box-sizing: border-box;
+
+	input:not([type=submit]),
+	textarea {
+		border: 1px solid #949494;
+		font-family: inherit;
+		font-size: 1em;
+	}
+
+	input:where(:not([type=submit]):not([type=checkbox])),
+	textarea {
+		padding: calc(.667em + 2px);
+	}
+
+	&[style*="font-weight"] {
+		:where(.comment-reply-title) {
+			font-weight: inherit;
+		}
+	}
+
+	&[style*="font-family"] {
+		:where(.comment-reply-title) {
+			font-family: inherit;
+		}
+	}
+
+	&[class*="-font-size"],
+	&[style*="font-size"] {
+		:where(.comment-reply-title) {
+			font-size: inherit;
+		}
+	}
+
+	&[style*="line-height"] {
+		:where(.comment-reply-title) {
+			line-height: inherit;
+		}
+	}
+
+	&[style*="font-style"] {
+		:where(.comment-reply-title) {
+			font-style: inherit;
+		}
+	}
+
+	&[style*="letter-spacing"] {
+		:where(.comment-reply-title) {
+			letter-spacing: inherit;
+		}
+	}
+
+	:where(input[type=submit]) {
+		box-shadow: none;
+		cursor: pointer;
+		display: inline-block;
+		overflow-wrap: break-word;
+		text-align: center;
+	}
+
+	.comment-form {
+
+		input:not([type=submit]):not([type=checkbox]):not([type=hidden]),
+		textarea {
+			box-sizing: border-box;
+			display: block;
+			width: 100%;
+		}
+
+		&-author label,
+		&-email label,
+		&-url label {
+			display: block;
+			margin-bottom: .25em;
+		}
+
+		&-cookies-consent {
+			display: flex;
+			gap: .25em;
+
+			#wp-comment-cookies-consent {
+				margin-top: .35em;
+			}
+		}
+	}
+
+	.comment-reply-title {
+		margin-bottom: 0;
+
+		:where(small) {
+			font-size: var(--wp--preset--font-size--medium, smaller);
+			margin-left: .5em;
+		}
+	}
+}

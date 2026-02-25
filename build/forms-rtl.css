@@ -15,7 +15,8 @@
   margin: 0;
 }
 .leira-auth p,
-.leira-auth .form-row {
+.leira-auth .form-row,
+.leira-auth .leira-form-row {
   margin-bottom: 16px;
 }
 .leira-auth label {
@@ -40,11 +41,6 @@
 .leira-auth {
   /* ---------- submit buttons ---------- */
 }
-.leira-auth button,
-.leira-auth input[type=submit],
-.leira-auth .wp-element-button {
-  width: 100%;
-}
 .leira-auth button.is-loading, .leira-auth button:disabled,
 .leira-auth input[type=submit].is-loading,
 .leira-auth input[type=submit]:disabled,
@@ -52,6 +48,24 @@
 .leira-auth .wp-element-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+.leira-auth .wp-block-button.leira-submit-align-left {
+  text-align: right;
+}
+.leira-auth .wp-block-button.leira-submit-align-center {
+  text-align: center;
+}
+.leira-auth .wp-block-button.leira-submit-align-right {
+  text-align: left;
+}
+.leira-auth .wp-block-button.leira-submit-align-full {
+  display: block;
+}
+.leira-auth .wp-block-button.leira-submit-align-full .wp-block-button__link,
+.leira-auth .wp-block-button.leira-submit-align-full .wp-element-button {
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 .leira-auth {
   /* ---------- error / notice ---------- */

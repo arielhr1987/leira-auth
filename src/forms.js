@@ -127,9 +127,14 @@ import './scss/forms.scss';
 
 		var payload = new FormData(form);
 
-		if (!payload.get('action')) {
-			payload.set('action', ajaxAction);
+		/* Force the AJAX action while preserving form type for server routing. */
+		if (!payload.get('_leira_auth_form')) {
+			var submittedAction = payload.get('action');
+			if (typeof submittedAction === 'string' && submittedAction) {
+				payload.set('_leira_auth_form', submittedAction);
+			}
 		}
+		payload.set('action', ajaxAction);
 
 		fetch(ajaxUrl, {
 			method: 'POST',

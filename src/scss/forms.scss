@@ -16,7 +16,8 @@
 	}
 
 	p,
-	.form-row {
+	.form-row,
+	.leira-form-row {
 		margin-bottom: 16px;
 	}
 
@@ -45,14 +46,34 @@
 	button,
 	input[type="submit"],
 	.wp-element-button {
-
-		width: 100%;
-
 		&.is-loading,
 		&:disabled {
 			opacity: .7;
 			cursor: not-allowed;
 		}
+	}
+
+	.wp-block-button.leira-submit-align-left {
+		text-align: left;
+	}
+
+	.wp-block-button.leira-submit-align-center {
+		text-align: center;
+	}
+
+	.wp-block-button.leira-submit-align-right {
+		text-align: right;
+	}
+
+	.wp-block-button.leira-submit-align-full {
+		display: block;
+	}
+
+	.wp-block-button.leira-submit-align-full .wp-block-button__link,
+	.wp-block-button.leira-submit-align-full .wp-element-button {
+		display: block;
+		width: 100%;
+		text-align: center;
 	}
 
 	/* ---------- error / notice ---------- */

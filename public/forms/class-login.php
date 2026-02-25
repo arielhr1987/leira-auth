@@ -99,13 +99,15 @@ class Login extends Form{
 		$this->add( $remember );
 
 		//Submit
-		$submit = new Submit( 'submit' );
-		$submit->options()
-		       ->set( 'input_attr', [
-			       'id'    => (string) ( $options['id_submit'] ?? 'submit' ),
-			       'class' => (string) ( $options['class_submit'] ?? '' ),
-		       ] );
-		$this->add( $submit );
+			$submit = new Submit( 'submit' );
+			$submit->options()
+			       ->set( 'label', (string) ( $options['label_log_in'] ?? __( 'Log In', 'leira-auth' ) ) )
+			       ->set( 'group_class', $this->submit_group_class( $options ) )
+			       ->set( 'input_attr', [
+				       'id'    => (string) ( $options['id_submit'] ?? 'wp-submit' ),
+				       'class' => (string) ( $options['submit_class'] ?? $options['class_submit'] ?? '' ),
+			       ] );
+			$this->add( $submit );
 
 		do_action( 'leira_auth_form_fields_login', $this, $options );
 	}
@@ -168,5 +170,29 @@ class Login extends Form{
 		}
 
 		return $redirect;
+	}
+
+	/**
+	 * Build submit button group classes.
+	 *
+	 * @param  array<string, mixed>  $options
+	 *
+	 * @return string
+	 */
+	protected function submit_group_class( array $options ): string {
+		$base_class = trim( (string) ( $options['submit_group_class'] ?? 'wp-block-button' ) );
+		if ( '' === $base_class ) {
+			$base_class = 'wp-block-button';
+		}
+
+		$alignment       = strtolower( (string) ( $options['submit_alignment'] ?? 'left' ) );
+		$alignment_class = match ( $alignment ) {
+			'center' => 'leira-submit-align-center',
+			'right' => 'leira-submit-align-right',
+			'full' => 'leira-submit-align-full',
+			default => 'leira-submit-align-left',
+		};
+
+		return trim( $base_class . ' ' . $alignment_class );
 	}
 }
