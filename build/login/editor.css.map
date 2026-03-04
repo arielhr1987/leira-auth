@@ -1,0 +1,1 @@
+{"version":3,"file":"login/editor.css","mappings":";;;AACC;EACC;AAAF;AAGC;EACC;AADF,C","sources":["webpack://leira-auth/./src/login/editor.scss"],"sourcesContent":[".leira-auth-form {\n\t* {\n\t\tpointer-events: none;\n\t}\n\n\t.leira-auth-form .block-editor-warning * {\n\t\tpointer-events: auto;\n\t}\n}\n\n"],"names":[],"sourceRoot":""}

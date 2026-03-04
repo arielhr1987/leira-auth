@@ -1,0 +1,61 @@
+/*!*********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/login/style.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************/
+:where(.leira-auth) {
+  box-sizing: border-box;
+}
+:where(.leira-auth) input:not([type=submit]),
+:where(.leira-auth) textarea {
+  background-color: var(--wp--preset--color--base, #fff);
+  border: 1px solid var(--wp--preset--color--contrast-3, #949494);
+  border-radius: var(--wp--custom--form--border--radius, 4px);
+  color: var(--wp--preset--color--contrast, currentColor);
+  font-family: inherit;
+  font-size: 1em;
+  line-height: var(--wp--custom--line-height--body, 1.5);
+}
+:where(.leira-auth) input:where(:not([type=submit]):not([type=checkbox])),
+:where(.leira-auth) textarea {
+  padding: calc(0.667em + 2px);
+}
+:where(.leira-auth) form input:not([type=submit]):not([type=checkbox]):not([type=hidden]),
+:where(.leira-auth) form textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+}
+:where(.leira-auth) .leira-auth-field {
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  unicode-bidi: isolate;
+}
+:where(.leira-auth) .leira-auth-label {
+  display: inline-block;
+  margin-bottom: 0.25em;
+}
+:where(.leira-auth) .leira-auth-check {
+  display: block;
+  min-height: 1.5rem;
+  padding-left: 1.5em;
+}
+:where(.leira-auth) .leira-auth-check > input[type=checkbox],
+:where(.leira-auth) .leira-auth-check .leira-auth-check-input {
+  float: left;
+  margin-left: -1.5em;
+  width: 1em;
+  height: 1em;
+}
+:where(.leira-auth) .leira-auth-check > label,
+:where(.leira-auth) .leira-auth-check .leira-auth-check-label {
+  display: inline-block;
+}
+:where(.leira-auth) .leira-auth-is-invalid {
+  border-color: red !important;
+}
+:where(.leira-auth) .leira-auth-invalid-feedback {
+  color: red;
+}
+
+/*# sourceMappingURL=style.css.map*/

@@ -29,71 +29,35 @@
     },
     "anchor": true
   },
-  "editorScript": "file:../../build/login.js",
+  "editorScript": "file:./edit.js",
   "style": [
     "wp-block-library",
-    "file:../../build/forms.css"
+    "wp-block-buttons",
+    "wp-block-button",
+    "file:./style.css"
   ],
   "editorStyle": [
     "wp-block-library",
-    "file:../../build/forms.css"
+    "wp-block-buttons",
+    "wp-block-button",
+    "file:./editor.css"
   ],
   "attributes": {
     "redirect": {
       "type": "string",
       "default": ""
     },
-    "ajax": {
-      "type": "boolean",
-      "default": false
-    },
-    "form_id": {
-      "type": "string",
-      "default": ""
-    },
-    "label_username": {
+    "username_label": {
       "type": "string",
       "default": "Username or Email Address"
-    },
-    "username_group_class": {
-      "type": "string",
-      "default": "login-username"
-    },
-    "username_label_class": {
-      "type": "string",
-      "default": ""
-    },
-    "id_username": {
-      "type": "string",
-      "default": "user_login"
-    },
-    "username_class": {
-      "type": "string",
-      "default": "input"
     },
     "username_placeholder": {
       "type": "string",
       "default": ""
     },
-    "label_password": {
+    "password_label": {
       "type": "string",
       "default": "Password"
-    },
-    "password_group_class": {
-      "type": "string",
-      "default": "login-password"
-    },
-    "password_label_class": {
-      "type": "string",
-      "default": ""
-    },
-    "id_password": {
-      "type": "string",
-      "default": "user_pass"
-    },
-    "password_class": {
-      "type": "string",
-      "default": "input"
     },
     "password_placeholder": {
       "type": "string",
@@ -103,43 +67,23 @@
       "type": "boolean",
       "default": true
     },
-    "value_remember": {
+    "remember_default": {
       "type": "boolean",
       "default": false
     },
-    "label_remember": {
+    "remember_label": {
       "type": "string",
       "default": "Remember Me"
     },
-    "id_remember": {
+    "submit_text": {
       "type": "string",
-      "default": "rememberme"
-    },
-    "remember_group_class": {
-      "type": "string",
-      "default": "login-remember"
-    },
-    "label_log_in": {
-      "type": "string",
-      "default": "Log In"
-    },
-    "id_submit": {
-      "type": "string",
-      "default": "wp-submit"
-    },
-    "submit_class": {
-      "type": "string",
-      "default": "wp-block-button__link wp-element-button"
-    },
-    "submit_group_class": {
-      "type": "string",
-      "default": "wp-block-button"
+      "default": ""
     },
     "submit_alignment": {
       "type": "string",
       "default": "left"
     },
-    "show_forgot_password": {
+    "forgot_password_show": {
       "type": "boolean",
       "default": true
     },
@@ -147,7 +91,7 @@
       "type": "string",
       "default": ""
     },
-    "show_register": {
+    "register_login": {
       "type": "boolean",
       "default": true
     },

@@ -139,6 +139,9 @@ class Flash{
 	 * @return void
 	 */
 	protected function persist(): void {
+		if ( empty( $this->data ) ) {
+			return;
+		}
 		$encrypted = $this->crypto->encrypt( $this->data );
 		setcookie(
 			self::COOKIE_NAME,

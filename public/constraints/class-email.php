@@ -24,14 +24,9 @@ class Email extends Constraint{
 	 * @param  mixed  $value
 	 * @param  Field  $field
 	 *
-	 * @return string|null
+	 * @return bool
 	 */
-	public function validate( $value, Field $field ): ?string {
-
-		if ( ! is_email( $value ) ) {
-			return $this->message;
-		}
-
-		return null;
+	public function validate( mixed $value, Field $field ): bool {
+		return (bool) is_email( $value );
 	}
 }

@@ -12,10 +12,11 @@ class Hidden extends Field{
 	/**
 	 * Hidden field constructor
 	 *
-	 * @param $name
+	 * @param string $name
+	 * @param  array  $options
 	 */
-	public function __construct( $name ) {
-		parent::__construct( $name );
-		$this->options->set( 'type', 'hidden' );
+	public function __construct( $name, $options = [] ) {
+		parent::__construct( $name, $options );
+		$this->set( 'type', 'hidden' );
 	}
 }

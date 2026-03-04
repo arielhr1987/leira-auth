@@ -2,7 +2,6 @@
 
 namespace Leira_Auth\Public\Fields;
 
-use Leira_Auth\Public\Contracts\Form as FormContract;
 use Leira_Auth\Public\Messages\Message;
 
 /**
@@ -13,62 +12,15 @@ use Leira_Auth\Public\Messages\Message;
 class Nonce extends Hidden{
 
 	/**
-	 * Nonce action.
-	 *
-	 * @var string
-	 */
-	protected string $nonce_action = '';
-
-	/**
 	 * Constructor.
 	 *
+	 * @param  string  $action
 	 * @param  string  $name
-	 * @param  string  $nonce_action
 	 */
-	public function __construct( string $name = '_leira_auth_nonce', string $nonce_action = '' ) {
-		parent::__construct( $name );
-		$this->nonce_action = $nonce_action;
-	}
-
-	/**
-	 * Set nonce action.
-	 *
-	 * @param  string  $nonce_action
-	 *
-	 * @return self
-	 */
-	public function set_nonce_action( string $nonce_action ): self {
-		$this->nonce_action = $nonce_action;
-
-		return $this;
-	}
-
-	/**
-	 * Get nonce action.
-	 *
-	 * @return string
-	 */
-	public function get_nonce_action(): string {
-		return $this->nonce_action;
-	}
-
-	/**
-	 * Resolve nonce action with sane fallbacks.
-	 *
-	 * @return string
-	 */
-	public function resolved_nonce_action(): string {
-		$action = trim( $this->nonce_action );
-		if ( '' !== $action ) {
-			return $action;
-		}
-
-		$form = $this->resolve_form();
-		if ( $form instanceof FormContract ) {
-			return $form->name();
-		}
-
-		return $this->get_name();
+	public function __construct( string $action = '_leira_auth_nonce', string $name = '_wpnonce' ) {
+		parent::__construct( $name, [
+			'action' => $action
+		] );
 	}
 
 	/**
@@ -79,16 +31,33 @@ class Nonce extends Hidden{
 	 * @return bool
 	 */
 	public function validate( mixed $value ): bool {
-		$this->messages()->clear();
-		$this->set_value( $value );
-
+		$this->sanitize( $value );
+		$this->clear_messages();
 		$nonce = is_scalar( $value ) ? (string) $value : '';
-		if ( '' === $nonce || ! wp_verify_nonce( $nonce, $this->resolved_nonce_action() ) ) {
-			$this->messages()->add( __( 'Invalid form submission.', 'leira-auth' ), Message::ERROR );
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, $this->get( 'action', '-1' ) ) ) {
+			$form = $this->get_form();
+			if ( $form ) {
+				//If the field belongs to a form, add the error to the form
+				$form->add_message( __( 'Invalid form submission.', 'leira-auth' ), Message::ERROR );
+			} else {
+				// If no form set, add the error to the field errors
+				$this->add_message( __( 'Invalid form submission.', 'leira-auth' ), Message::ERROR );
+			}
 
 			return false;
 		}
 
+		$this->value = $value;
+
 		return true;
+	}
+
+	/**
+	 * Render nonce field using WordPress helper.
+	 *
+	 * @return string
+	 */
+	public function render(): string {
+		return wp_nonce_field( $this->get( 'action', '-1' ), $this->get_name(), true, false );
 	}
 }

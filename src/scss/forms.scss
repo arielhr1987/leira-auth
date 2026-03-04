@@ -1,112 +1,112 @@
-/*
- * Basic styles for Leira Auth forms.
- * Keeps WordPress native form classes and appearance intact,
- * only adds layout, spacing, and small UX improvements.
- */
-
-.leira-auth {
-
-	/* ---------- layout ---------- */
-
-	max-width: 420px;
-	margin: 0 auto;
-
-	form {
-		margin: 0;
-	}
-
-	p,
-	.form-row,
-	.leira-form-row {
-		margin-bottom: 16px;
-	}
-
-	label {
-		display: block;
-		font-weight: 600;
-		margin-bottom: 6px;
-	}
-
-	/* ---------- inputs ---------- */
-	/* Do NOT override WP input styles, only normalize sizing */
-
-	input[type="text"],
-	input[type="email"],
-	input[type="password"],
-	input[type="url"],
-	input[type="search"],
-	select,
-	textarea {
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	/* ---------- submit buttons ---------- */
-
-	button,
-	input[type="submit"],
-	.wp-element-button {
-		&.is-loading,
-		&:disabled {
-			opacity: .7;
-			cursor: not-allowed;
-		}
-	}
-
-	.wp-block-button.leira-submit-align-left {
-		text-align: left;
-	}
-
-	.wp-block-button.leira-submit-align-center {
-		text-align: center;
-	}
-
-	.wp-block-button.leira-submit-align-right {
-		text-align: right;
-	}
-
-	.wp-block-button.leira-submit-align-full {
-		display: block;
-	}
-
-	.wp-block-button.leira-submit-align-full .wp-block-button__link,
-	.wp-block-button.leira-submit-align-full .wp-element-button {
-		display: block;
-		width: 100%;
-		text-align: center;
-	}
-
-	/* ---------- error / notice ---------- */
-	/* Compatible with WP notices + your runtime alert container */
-
-	.alert,
-	.notice {
-		margin-bottom: 16px;
-	}
-
-	.alert-danger,
-	.notice-error {
-		border-left-width: 4px;
-		padding: 12px;
-	}
-
-	/* ---------- field errors ---------- */
-
-	.is-invalid,
-	[aria-invalid="true"] {
-		border-color: #d63638;
-	}
-
-	.leira-field-error {
-		color: #d63638;
-		font-size: 13px;
-		margin-top: 4px;
-	}
-
-	/* ---------- loading state ---------- */
-
-	form.is-submitting {
-		opacity: .85;
-		pointer-events: none;
-	}
-}
+///*
+// * Basic styles for Leira Auth forms.
+// * Keeps WordPress native form classes and appearance intact,
+// * only adds layout, spacing, and small UX improvements.
+// */
+//
+//.leira-auth {
+//
+//	/* ---------- layout ---------- */
+//
+//	max-width: 420px;
+//	margin: 0 auto;
+//
+//	form {
+//		margin: 0;
+//	}
+//
+//	p,
+//	.form-row,
+//	.leira-form-row {
+//		margin-bottom: 16px;
+//	}
+//
+//	label {
+//		display: block;
+//		font-weight: 600;
+//		margin-bottom: 6px;
+//	}
+//
+//	/* ---------- inputs ---------- */
+//	/* Do NOT override WP input styles, only normalize sizing */
+//
+//	input[type="text"],
+//	input[type="email"],
+//	input[type="password"],
+//	input[type="url"],
+//	input[type="search"],
+//	select,
+//	textarea {
+//		width: 100%;
+//		box-sizing: border-box;
+//	}
+//
+//	/* ---------- submit buttons ---------- */
+//
+//	button,
+//	input[type="submit"],
+//	.wp-element-button {
+//		&.is-loading,
+//		&:disabled {
+//			opacity: .7;
+//			cursor: not-allowed;
+//		}
+//	}
+//
+//	.wp-block-button.leira-submit-align-left {
+//		text-align: left;
+//	}
+//
+//	.wp-block-button.leira-submit-align-center {
+//		text-align: center;
+//	}
+//
+//	.wp-block-button.leira-submit-align-right {
+//		text-align: right;
+//	}
+//
+//	.wp-block-button.leira-submit-align-full {
+//		display: block;
+//	}
+//
+//	.wp-block-button.leira-submit-align-full .wp-block-button__link,
+//	.wp-block-button.leira-submit-align-full .wp-element-button {
+//		display: block;
+//		width: 100%;
+//		text-align: center;
+//	}
+//
+//	/* ---------- error / notice ---------- */
+//	/* Compatible with WP notices + your runtime alert container */
+//
+//	.alert,
+//	.notice {
+//		margin-bottom: 16px;
+//	}
+//
+//	.alert-danger,
+//	.notice-error {
+//		border-left-width: 4px;
+//		padding: 12px;
+//	}
+//
+//	/* ---------- field errors ---------- */
+//
+//	.is-invalid,
+//	[aria-invalid="true"] {
+//		border-color: #d63638;
+//	}
+//
+//	.leira-field-error {
+//		color: #d63638;
+//		font-size: 13px;
+//		margin-top: 4px;
+//	}
+//
+//	/* ---------- loading state ---------- */
+//
+//	form.is-submitting {
+//		opacity: .85;
+//		pointer-events: none;
+//	}
+//}

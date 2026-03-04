@@ -1,11 +1,23 @@
-:where(.leira-auth-form) {
+$prefix: 'leira-auth';
+
+:where(.leira-auth) {
 	box-sizing: border-box;
 
 	input:not([type=submit]),
 	textarea {
-		border: 1px solid #949494;
+		background-color: var(--wp--preset--color--base, #fff);
+		border: 1px solid var(--wp--preset--color--contrast-3, #949494);
+		border-radius: var(--wp--custom--form--border--radius, 4px);
+		color: var(--wp--preset--color--contrast, currentColor);
 		font-family: inherit;
 		font-size: 1em;
+		line-height: var(--wp--custom--line-height--body, 1.5);
+
+
+		//--wp--preset--font-size--small
+		//--wp--preset--font-size--medium
+		//--wp--preset--font-size--large
+		//--wp--preset--font-size--x-large
 	}
 
 	input:where(:not([type=submit]):not([type=checkbox])),
@@ -13,52 +25,52 @@
 		padding: calc(.667em + 2px);
 	}
 
-	&[style*="font-weight"] {
-		:where(.comment-reply-title) {
-			font-weight: inherit;
-		}
-	}
-
-	&[style*="font-family"] {
-		:where(.comment-reply-title) {
-			font-family: inherit;
-		}
-	}
-
-	&[class*="-font-size"],
-	&[style*="font-size"] {
-		:where(.comment-reply-title) {
-			font-size: inherit;
-		}
-	}
-
-	&[style*="line-height"] {
-		:where(.comment-reply-title) {
-			line-height: inherit;
-		}
-	}
-
-	&[style*="font-style"] {
-		:where(.comment-reply-title) {
-			font-style: inherit;
-		}
-	}
-
-	&[style*="letter-spacing"] {
-		:where(.comment-reply-title) {
-			letter-spacing: inherit;
-		}
-	}
+	//&[style*="font-weight"] {
+	//	:where(.comment-reply-title) {
+	//		font-weight: inherit;
+	//	}
+	//}
+	//
+	//&[style*="font-family"] {
+	//	:where(.comment-reply-title) {
+	//		font-family: inherit;
+	//	}
+	//}
+	//
+	//&[class*="-font-size"],
+	//&[style*="font-size"] {
+	//	:where(.comment-reply-title) {
+	//		font-size: inherit;
+	//	}
+	//}
+	//
+	//&[style*="line-height"] {
+	//	:where(.comment-reply-title) {
+	//		line-height: inherit;
+	//	}
+	//}
+	//
+	//&[style*="font-style"] {
+	//	:where(.comment-reply-title) {
+	//		font-style: inherit;
+	//	}
+	//}
+	//
+	//&[style*="letter-spacing"] {
+	//	:where(.comment-reply-title) {
+	//		letter-spacing: inherit;
+	//	}
+	//}
 
 	:where(input[type=submit]) {
-		box-shadow: none;
-		cursor: pointer;
-		display: inline-block;
-		overflow-wrap: break-word;
-		text-align: center;
+		//box-shadow: none;
+		//cursor: pointer;
+		//display: inline-block;
+		//overflow-wrap: break-word;
+		//text-align: center;
 	}
 
-	.comment-form {
+	form {
 
 		input:not([type=submit]):not([type=checkbox]):not([type=hidden]),
 		textarea {
@@ -67,29 +79,77 @@
 			width: 100%;
 		}
 
-		&-author label,
-		&-email label,
-		&-url label {
-			display: block;
-			margin-bottom: .25em;
+		//&-cookies-consent {
+		//	display: flex;
+		//	gap: .25em;
+		//
+		//	#wp-comment-cookies-consent {
+		//		margin-top: .35em;
+		//	}
+		//}
+	}
+
+	//.comment-reply-title {
+	//	margin-bottom: 0;
+	//
+	//	:where(small) {
+	//		font-size: var(--wp--preset--font-size--medium, smaller);
+	//		margin-left: .5em;
+	//	}
+	//}
+
+	// Field
+	.leira-auth-field {
+		margin-block-start: 1em;
+		margin-block-end: 1em;
+		margin-inline-start: 0px;
+		margin-inline-end: 0px;
+		unicode-bidi: isolate;
+	}
+
+	// Label
+	.leira-auth-label {
+		display: inline-block;
+		margin-bottom: .25em;
+	}
+
+	// Checkbox
+	.leira-auth-check {
+		display: block;
+		min-height: 1.5rem;
+		padding-left: 1.5em;
+		//margin-bottom: .125rem;
+
+		> input[type="checkbox"],
+		.leira-auth-check-input {
+			float: left;
+			//margin-top: .2em;
+			margin-left: -1.5em;
+			width: 1em;
+			height: 1em;
 		}
 
-		&-cookies-consent {
-			display: flex;
-			gap: .25em;
-
-			#wp-comment-cookies-consent {
-				margin-top: .35em;
-			}
+		> label,
+		.leira-auth-check-label {
+			display: inline-block;
 		}
 	}
 
-	.comment-reply-title {
-		margin-bottom: 0;
-
-		:where(small) {
-			font-size: var(--wp--preset--font-size--medium, smaller);
-			margin-left: .5em;
-		}
+	// Validation
+	.leira-auth-is-invalid {
+		border-color: red !important; //var(--wp--preset--color--contrast-3, #fff);
 	}
+
+
+	.leira-auth-invalid-feedback {
+		color: red; //var(--wp--preset--color--contrast-3, #fff);
+	}
+
+	// Help
+	.leira-auth-help {
+		//small font size
+	}
+
 }
+
+

@@ -19,6 +19,17 @@ abstract class Constraint implements Constraint_Interface{
 	protected string $message = '';
 
 	/**
+	 * Constructor.
+	 *
+	 * @param  string  $message  Optional custom validation message.
+	 */
+	public function __construct( string $message = '' ) {
+		if ( ! empty( $message ) ) {
+			$this->message = $message;
+		}
+	}
+
+	/**
 	 * Get the validation error message
 	 *
 	 * @return string The message

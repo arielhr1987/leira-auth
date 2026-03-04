@@ -7,16 +7,16 @@ namespace Leira_Auth\Public\Fields;
  *
  * @since 1.0.0
  */
-class Text extends Field{
+class Text extends Input{
 
 	/**
 	 * Text field constructor
 	 *
-	 * @param $name
+	 * @param  string  $name
+	 * @param  array  $options
 	 */
-	public function __construct( $name ) {
-		parent::__construct( $name );
-		$this->options->set( 'type', 'text' );
+	public function __construct( $name, $options = [] ) {
+		parent::__construct( $name, $options );
+		$this->set( 'type', 'text' );
 	}
-
 }

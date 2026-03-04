@@ -16,7 +16,7 @@ class Required extends Constraint{
 	 *
 	 * @var string
 	 */
-	protected string $message = 'The field is required.';
+	protected string $message = 'This field is required.';
 
 	/**
 	 * The field validation
@@ -24,14 +24,10 @@ class Required extends Constraint{
 	 * @param  mixed  $value  The value to validate
 	 * @param  Field  $field  The field implementation
 	 *
-	 * @return string|null
+	 * @return bool
 	 */
-	public function validate( mixed $value, Field $field ): ?string {
+	public function validate( mixed $value, Field $field ): bool {
 		//false or 0 will be treated as a valid field value
-		if ( $value === null || $value === '' ) {
-			return $this->message;
-		}
-
-		return null;
+		return ! ( $value === null || $value === '' );
 	}
 }

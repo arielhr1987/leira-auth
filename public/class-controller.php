@@ -4,7 +4,6 @@ namespace Leira_Auth\Public;
 
 use Leira_Auth\Includes\Plugin;
 use Leira_Auth\Public\Forms\Factory;
-use Leira_Auth\Public\Renderers\Renderer;
 use WP_Block;
 use WP_Post;
 
@@ -14,13 +13,6 @@ use WP_Post;
  * @since 1.0.0
  */
 class Controller{
-
-	/**
-	 * Form renderer.
-	 *
-	 * @var Renderer|null
-	 */
-	protected ?Renderer $form_renderer = null;
 
 	/**
 	 * Initialize shared plugin instances.
@@ -47,10 +39,14 @@ class Controller{
 	public function init(): void {
 		$this->register_frontend_script();
 
-		$block = plugin_dir_path( __DIR__ ) . 'blocks/login/block.json';
-		register_block_type( $block, [
-			'render_callback' => [ $this, 'shortcode' ],
-		] );
+		$blocks = glob( plugin_dir_path( __DIR__ ) . 'build/*/block.json' );
+		if ( is_array( $blocks ) ) {
+			foreach ( $blocks as $block ) {
+				register_block_type( $block, [
+					'render_callback' => [ $this, 'shortcode' ],
+				] );
+			}
+		}
 
 //		register_block_style( 'leira-auth/login', [
 //			'name'         => 'neon-glow',
@@ -110,7 +106,7 @@ class Controller{
 		}
 
 		// Render the form
-		return $this->renderer()->render( $form );
+		return $form->render();
 	}
 
 	/**
@@ -153,10 +149,16 @@ class Controller{
 			return;
 		}
 
-		if ( ! $form->handle() ) {
-			$snapshot = $form->snapshot();
-			Plugin::instance()->flash->add( $snapshot );
+		if ( $form->validate( $data ) ) {
+			$form->handle();
+		} else {
+			if ( ! $form->has_messages() ) {
+				$form->add_error_message( __( 'Please fix the errors below.', 'leira-auth' ) );
+			}
 		}
+
+		$snapshot = $form->snapshot();
+		Plugin::instance()->flash->add( $snapshot );
 
 		wp_safe_redirect( $this->get_return_url( $post ) );
 		exit;
@@ -192,18 +194,18 @@ class Controller{
 		if ( ! $form->handle() ) {
 			wp_send_json_error(
 				[
-					'form'     => $form->name(),
-					'messages' => $form->messages()->to_array(),
+					'form'     => $form->get_name(),
+					'messages' => $form->messages_to_array(),
 					//'field_messages' => $this->field_messages( $form ),
-					'html'     => $this->renderer()->render( $form ),
+					'html'     => $form->render(),
 				],
 				422
 			);
 		}
 
 		$response = [
-			'form'     => $form->name(),
-			'messages' => $form->messages()->to_array(),
+			'form'     => $form->get_name(),
+			'messages' => $form->messages_to_array(),
 		];
 
 		if ( method_exists( $form, 'redirect_url' ) ) {
@@ -302,19 +304,6 @@ class Controller{
 	}
 
 	/**
-	 * Resolve form renderer.
-	 *
-	 * @return Renderer
-	 */
-	protected function renderer(): Renderer {
-		if ( null === $this->form_renderer ) {
-			$this->form_renderer = new Renderer();
-		}
-
-		return $this->form_renderer;
-	}
-
-	/**
 	 * Register frontend AJAX helper script.
 	 *
 	 * @return void
@@ -334,12 +323,12 @@ class Controller{
 			true
 		);
 
-		wp_register_style(
-			'leira-auth-forms-css',
-			LEIRA_AUTH_URL . 'build/forms.css',
-			[ 'wp-block-library', 'wp-block-button', 'wp-block-buttons' ],
-			$asset['version'],
-		);
+//		wp_register_style(
+//			'leira-auth-forms-css',
+//			LEIRA_AUTH_URL . 'build/forms.css',
+//			[ 'wp-block-library', 'wp-block-button', 'wp-block-buttons' ],
+//			$asset['version'],
+//		);
 
 		wp_localize_script(
 			'leira-auth-forms-js',

@@ -2,8 +2,7 @@
 
 namespace Leira_Auth\Public\Contracts;
 
-use Leira_Auth\Public\Collections\Messages;
-use Leira_Auth\Public\Fields\Field as Field_Node;
+use Leira_Auth\Public\Messages\Message;
 
 /**
  * Form contract.
@@ -17,7 +16,7 @@ interface Form{
 	 *
 	 * @return string
 	 */
-	public function name(): string;
+	public function get_name(): string;
 
 	/**
 	 * Build form from options.
@@ -36,47 +35,70 @@ interface Form{
 	public function handle(): bool;
 
 	/**
-	 * Collected data.
+	 * Render form HTML.
+	 *
+	 * @return string
+	 */
+	public function render(): string;
+
+	/**
+	 * Collected field values.
 	 *
 	 * @return array
 	 */
-	public function data(): array;
+	public function get_values(): array;
 
 	/**
 	 * Add a child field.
 	 *
-	 * @param  Field_Node  $field
-	 * @param  string|null  $key
+	 * @param  Field  $field
 	 *
 	 * @return self
 	 */
-	public function add( Field_Node $field, ?string $key = null ): self;
+	public function add_field( Field $field ): self;
 
 	/**
-	 * Set a child field by key.
+	 * Set an option by key.
 	 *
-	 * @param  string  $name
-	 * @param  Field_Node  $field
+	 * @param  string  $key
+	 * @param  mixed  $value
 	 *
 	 * @return self
 	 */
-	public function set( string $name, Field_Node $field ): self;
+	public function set( string $key, mixed $value ): self;
+
+	/**
+	 * Get an option by key.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $default
+	 *
+	 * @return mixed
+	 */
+	public function get( string $key, mixed $default = null ): mixed;
+
+	/**
+	 * Get options.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function get_options(): array;
 
 	/**
 	 * Get child field by key.
 	 *
 	 * @param  string  $name
 	 *
-	 * @return Field_Node|null
+	 * @return Field|null
 	 */
-	public function get( string $name ): ?Field_Node;
+	public function get_field( string $name ): ?Field;
 
 	/**
-	 * Get an ordered child field list.
+	 * Get child fields.
 	 *
-	 * @return array<int, Field_Node>
+	 * @return array<string, Field>
 	 */
-	public function all(): array;
+	public function all_fields(): array;
 
 	/**
 	 * Remove one child field by key.
@@ -85,19 +107,52 @@ interface Form{
 	 *
 	 * @return self
 	 */
-	public function remove( string $name ): self;
+	public function remove_field( string $name ): self;
 
 	/**
 	 * Remove all child fields.
 	 *
 	 * @return self
 	 */
-	public function clear(): self;
+	public function clear_fields(): self;
+
+	/**
+	 * Validate submitted payload.
+	 *
+	 * @param  mixed  $data
+	 *
+	 * @return bool
+	 */
+	public function validate( mixed $data ): bool;
 
 	/**
 	 * Get form-level messages.
 	 *
-	 * @return Messages
+	 * @return array<int, Message>
 	 */
-	public function messages(): Messages;
+	public function messages(): array;
+
+	/**
+	 * Add a form-level message.
+	 *
+	 * @param  Message|string  $message
+	 * @param  string  $type
+	 *
+	 * @return self
+	 */
+	public function add_message( Message|string $message, string $type = Message::ERROR ): self;
+
+	/**
+	 * Remove all messages.
+	 *
+	 * @return self
+	 */
+	public function clear_messages(): self;
+
+	/**
+	 * Determine if the form has messages.
+	 *
+	 * @return bool
+	 */
+	public function has_messages(): bool;
 }

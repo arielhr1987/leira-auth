@@ -18,12 +18,19 @@ interface Constraint {
 	 * Validate a field value against this constraint.
 	 *
 	 * Performs validation on the provided value within the context of its field and form.
-	 * Returns an error message if validation fails, or null if the value is valid.
+	 * Returns true when the value is valid and false when it fails validation.
 	 *
 	 * @param  mixed  $value  The field value to validate
 	 * @param  Field  $field  The field being validated
 	 *
-	 * @return string|null  Error message if validation fails, or null if valid
+	 * @return bool
 	 */
-	public function validate( mixed $value, Field $field ): ?string;
+	public function validate( mixed $value, Field $field ): bool;
+
+	/**
+	 * Get the validation message for failed assertions.
+	 *
+	 * @return string
+	 */
+	public function get_message(): string;
 }

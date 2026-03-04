@@ -40,7 +40,7 @@ class Fields extends Collection{
 		$this->assert_type( $field );
 
 		/** @var FieldContract $field */
-		$this->set( $field->name(), $field );
+		$this->set( $field->get_name(), $field );
 
 		return $this;
 	}
@@ -56,8 +56,8 @@ class Fields extends Collection{
 		usort(
 			$fields,
 			static function ( FieldContract $a, FieldContract $b ): int {
-				$a_priority = method_exists( $a, 'priority' ) ? (int) $a->priority() : 10;
-				$b_priority = method_exists( $b, 'priority' ) ? (int) $b->priority() : 10;
+				$a_priority = method_exists( $a, 'get_priority' ) ? (int) $a->get_priority() : 10;
+				$b_priority = method_exists( $b, 'get_priority' ) ? (int) $b->get_priority() : 10;
 
 				return $a_priority <=> $b_priority;
 			}

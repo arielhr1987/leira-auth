@@ -7,24 +7,18 @@ namespace Leira_Auth\Public\Fields;
  *
  * @since 1.0.0
  */
-class Password extends Text{
+class Password extends Input{
 
 	/**
 	 * Text field constructor
 	 *
-	 * @param $name
+	 * @param  string  $name
+	 * @param  array  $options
 	 */
-	public function __construct( $name ) {
-		parent::__construct( $name );
-		$this->options->set( 'type', 'password' );
+	public function __construct( $name, $options = [] ) {
+		parent::__construct( $name, $options );
+		$this->set( 'type', 'password' );
 	}
-
-	/**
-	 * Whether the password field can be toggled.
-	 *
-	 * @var bool
-	 */
-	protected bool $toggleable = false;
 
 	/**
 	 * Enable/disable the visibility toggle.
@@ -34,7 +28,7 @@ class Password extends Text{
 	 * @return self
 	 */
 	public function toggleable( bool $value = true ): self {
-		$this->toggleable = $value;
+		$this->set( 'toggleable', $value );
 
 		return $this;
 	}
@@ -45,6 +39,6 @@ class Password extends Text{
 	 * @return bool
 	 */
 	public function is_toggleable(): bool {
-		return $this->toggleable;
+		return $this->get( 'toggleable' );
 	}
 }

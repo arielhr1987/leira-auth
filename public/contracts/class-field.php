@@ -24,20 +24,11 @@ interface Field{
 	public function get_value(): mixed;
 
 	/**
-	 * Update field value.
-	 *
-	 * @param  mixed  $value
-	 *
-	 * @return self
-	 */
-	public function set_value( mixed $value ): self;
-
-	/**
 	 * Parent form.
 	 *
-	 * @return Form
+	 * @return Form|null
 	 */
-	public function get_form(): Form;
+	public function get_form(): ?Form;
 
 	/**
 	 * Attach form.
@@ -47,5 +38,21 @@ interface Field{
 	 * @return self
 	 */
 	public function set_form( Form $form ): self;
+
+	/**
+	 * Validate field value.
+	 *
+	 * @param  mixed  $value
+	 *
+	 * @return bool
+	 */
+	public function validate( mixed $value ): bool;
+
+	/**
+	 * Render field HTML.
+	 *
+	 * @return string
+	 */
+	public function render(): string;
 
 }
