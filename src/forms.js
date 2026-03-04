@@ -16,13 +16,7 @@ import './scss/forms.scss';
 	'use strict';
 
 	var config = window.leiraAuthFrontend || {};
-	var ajaxUrl = config.ajaxUrl || window.ajaxurl || '';
-	var ajaxAction = config.ajaxAction || 'leira_auth_submit';
 	var genericError = config.errorText || 'Unable to submit the form right now.';
-
-	if (!ajaxUrl) {
-		return;
-	}
 
 	/**
 	 * Toggle loading state on a form.
@@ -127,18 +121,24 @@ import './scss/forms.scss';
 
 		var payload = new FormData(form);
 
-		/* Force the AJAX action while preserving form type for server routing. */
+		/* Ensure form type is present for server routing. */
 		if (!payload.get('_leira_auth_form')) {
 			var submittedAction = payload.get('action');
 			if (typeof submittedAction === 'string' && submittedAction) {
 				payload.set('_leira_auth_form', submittedAction);
 			}
 		}
-		payload.set('action', ajaxAction);
 
-		fetch(ajaxUrl, {
+		var submitUrl = form.getAttribute('action') || window.location.href;
+		submitUrl = submitUrl.split('#')[0];
+
+		fetch(submitUrl, {
 			method: 'POST',
 			credentials: 'same-origin',
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest',
+				'Accept': 'application/json'
+			},
 			body: payload,
 		})
 		.then(parseJsonSafe)

@@ -127,7 +127,13 @@ class Login extends Form{
 
 		$this->redirect_url = $this->resolve_redirect_url( $user );
 
-		if ( wp_doing_ajax() ) {
+		$is_ajax_request = wp_doing_ajax()
+			|| 'xmlhttprequest' === strtolower( (string) ( $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '' ) );
+		if ( ! $is_ajax_request ) {
+			$accept = strtolower( (string) ( $_SERVER['HTTP_ACCEPT'] ?? '' ) );
+			$is_ajax_request = str_contains( $accept, 'application/json' );
+		}
+		if ( $is_ajax_request ) {
 			return true;
 		}
 

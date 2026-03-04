@@ -41,13 +41,10 @@ class Form implements Form_Contract{
 	 * @param  string  $name
 	 */
 	public function __construct( string $name ) {
-		//Set the form name
-		$this->name = $name;
-		//Clear any fields
-		$this->clear_fields();
-		//Add default form fields
-		$this->add_field( new Hidden( 'action', [ 'default' => $name ] ) );
-		$this->add_field( new Nonce( $name ) );
+		$this->name = $name;                                                // The form name
+		$this->clear_fields();                                              // Remove any field
+		$this->add_field( new Hidden( 'action', [ 'default' => $name ] ) ); // Form action field
+		$this->add_field( new Nonce( $name ) );                             // Form wp nonce field
 	}
 
 	/**
@@ -314,13 +311,12 @@ class Form implements Form_Contract{
 
 		foreach ( $this->messages() as $message ) {
 			$type = $message->is_success() ? Message::SUCCESS : Message::ERROR;
-			$role = Message::SUCCESS === $type ? 'status' : 'alert';
-			$item = sprintf(
-				'<div class="leira-form-message leira-form-message--%1$s" role="%2$s"><p>%3$s</p></div>',
-				esc_attr( $type ),
-				esc_attr( $role ),
-				esc_html( $message->text() )
-			);
+			$attr = [
+				'type'  => $type,
+				'role'  => $type === Message::SUCCESS ? 'status' : 'alert',
+				'class' => 'leira-form-message leira-form-message--' . $type
+			];
+			$item = Html::render_element( 'div', $attr, esc_html( $message->text() ) );
 
 			if ( Message::SUCCESS === $type ) {
 				$success .= $item;
@@ -329,7 +325,7 @@ class Form implements Form_Contract{
 			}
 		}
 
-		if ( '' === $success && '' === $error ) {
+		if ( empty( $success ) && empty( $error ) ) {
 			return '';
 		}
 

@@ -120,6 +120,12 @@ class Controller{
 			return;
 		}
 
+		if ( $this->is_ajax_request() ) {
+			$this->ajax_handle();
+
+			return;
+		}
+
 		if ( ! is_singular() ) {
 			return;
 		}
@@ -191,16 +197,25 @@ class Controller{
 			wp_send_json_error( [ 'message' => __( 'Form not available.', 'leira-auth' ) ], 404 );
 		}
 
-		if ( ! $form->handle() ) {
-			wp_send_json_error(
-				[
-					'form'     => $form->get_name(),
-					'messages' => $form->messages_to_array(),
-					//'field_messages' => $this->field_messages( $form ),
-					'html'     => $form->render(),
-				],
-				422
-			);
+		$valid = $form->validate( $data );
+		if ( ! $valid && ! $form->has_messages() ) {
+			$form->add_error_message( __( 'Please fix the errors below.', 'leira-auth' ) );
+		}
+
+		if ( $valid && ! $form->handle() ) {
+			wp_send_json_error( [
+				'form'     => $form->get_name(),
+				'messages' => $form->messages_to_array(),
+				'html'     => $form->render(),
+			], 422 );
+		}
+
+		if ( ! $valid ) {
+			wp_send_json_error( [
+				'form'     => $form->get_name(),
+				'messages' => $form->messages_to_array(),
+				'html'     => $form->render(),
+			], 422 );
 		}
 
 		$response = [
@@ -218,6 +233,26 @@ class Controller{
 		$response = (array) apply_filters( 'leira_auth_ajax_success_response', $response, $form, $data );
 
 		wp_send_json_success( $response );
+	}
+
+	/**
+	 * Determine whether the current request is an AJAX form submission.
+	 *
+	 * @return bool
+	 */
+	protected function is_ajax_request(): bool {
+		if ( wp_doing_ajax() ) {
+			return true;
+		}
+
+		$requested_with = strtolower( (string) ( $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '' ) );
+		if ( 'xmlhttprequest' === $requested_with ) {
+			return true;
+		}
+
+		$accept = strtolower( (string) ( $_SERVER['HTTP_ACCEPT'] ?? '' ) );
+
+		return str_contains( $accept, 'application/json' );
 	}
 
 	/**
@@ -296,10 +331,6 @@ class Controller{
 		}
 
 		$action = sanitize_key( (string) ( $data['action'] ?? '' ) );
-		if ( 'leira_auth_submit' === $action ) {
-			return '';
-		}
-
 		return $action;
 	}
 
@@ -334,9 +365,7 @@ class Controller{
 			'leira-auth-forms-js',
 			'leiraAuthFrontend',
 			[
-				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-				'ajaxAction' => 'leira_auth_submit',
-				'errorText'  => __( 'Unable to submit the form right now.', 'leira-auth' ),
+				'errorText' => __( 'Unable to submit the form right now.', 'leira-auth' ),
 			]
 		);
 	}

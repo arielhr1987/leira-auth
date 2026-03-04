@@ -2,13 +2,7 @@
 	'use strict';
 
 	var config = window.leiraAuthFrontend || {};
-	var ajaxUrl = config.ajaxUrl || window.ajaxurl || '';
-	var ajaxAction = config.ajaxAction || 'leira_auth_submit';
 	var genericError = config.errorText || 'Unable to submit the form right now.';
-
-	if (!ajaxUrl) {
-		return;
-	}
 
 	function replaceFormHtml(form, html) {
 		if (typeof html !== 'string' || html.trim() === '') {
@@ -52,13 +46,23 @@
 		event.preventDefault();
 
 		var payload = new FormData(form);
-		if (!payload.get('action')) {
-			payload.set('action', ajaxAction);
+		if (!payload.get('_leira_auth_form')) {
+			var submittedAction = payload.get('action');
+			if (typeof submittedAction === 'string' && submittedAction) {
+				payload.set('_leira_auth_form', submittedAction);
+			}
 		}
 
-		fetch(ajaxUrl, {
+		var submitUrl = form.getAttribute('action') || window.location.href;
+		submitUrl = submitUrl.split('#')[0];
+
+		fetch(submitUrl, {
 			method: 'POST',
 			credentials: 'same-origin',
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest',
+				'Accept': 'application/json',
+			},
 			body: payload,
 		})
 			.then(function (response) {
