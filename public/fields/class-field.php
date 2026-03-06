@@ -103,6 +103,28 @@ abstract class Field implements Field_Contract{
 	}
 
 	/**
+	 * Get render priority.
+	 *
+	 * @return int
+	 */
+	public function get_priority(): int {
+		return $this->get( 'priority' );
+	}
+
+	/**
+	 * Set render priority.
+	 *
+	 * @param  int  $priority
+	 *
+	 * @return self
+	 */
+	public function set_priority( int $priority = 10 ): self {
+		$this->set( 'priority', $priority );
+
+		return $this;
+	}
+
+	/**
 	 * Sanitize incoming field value using the configured callback.
 	 *
 	 * @param  mixed  $value
@@ -182,7 +204,7 @@ abstract class Field implements Field_Contract{
 
 		$attributes = apply_filters( 'leira_auth_input_attributes', array_filter( $attributes ), $this );
 
-		$html = Html::render_element( 'input', $attributes );
+		$html = Html::el( 'input', $attributes );
 
 		return (string) apply_filters( 'leira_auth_render_input', $html, $this );
 	}

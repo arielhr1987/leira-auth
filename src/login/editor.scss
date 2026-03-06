@@ -1,10 +1,57 @@
-.leira-auth-form {
-	* {
-		pointer-events: none;
+$border-radius: var(--wp--style--border--radius, var(--wp--custom--border-radius, var(--wp--preset--radius--medium, 4px)));
+
+.editor-styles-wrapper {
+	.leira-auth-form {
+		* {
+			pointer-events: none;
+		}
+
+		.block-editor-warning * {
+			pointer-events: auto;
+		}
 	}
 
-	.leira-auth-form .block-editor-warning * {
-		pointer-events: auto;
+	:where(.leira-auth) {
+		input:not([type=submit]),
+		textarea {
+			background-color: var(--wp--preset--color--base, #fff);
+			border: 1px solid var(--wp--preset--color--contrast-3, #949494);
+			border-radius: $border-radius;
+			color: var(--wp--preset--color--contrast, currentColor);
+			font-family: inherit;
+			font-size: 1em;
+			line-height: var(--wp--custom--line-height--body, 1.5);
+			box-shadow: none;
+		}
+
+		input:where(:not([type=submit]):not([type=checkbox])),
+		textarea {
+			padding: calc(.667em + 2px);
+		}
+
+		form {
+			input:not([type=submit]):not([type=checkbox]):not([type=hidden]),
+			textarea {
+				box-sizing: border-box;
+				display: block;
+				width: 100%;
+			}
+		}
+
+		.leira-auth-is-invalid {
+			border-color: var(--wp--preset--color--vivid-red, #d63638) !important;
+			outline-color: var(--wp--preset--color--vivid-red, #d63638) !important;
+		}
+
+		.leira-auth-invalid-feedback {
+			margin-top: .25rem;
+			color: var(--wp--preset--color--vivid-red, #d63638) !important;
+			font-size: var(--wp--preset--font-size--small, small);
+		}
+
+		.leira-auth-help {
+			margin-top: .25rem;
+			font-size: var(--wp--preset--font-size--small, small);
+		}
 	}
 }
-

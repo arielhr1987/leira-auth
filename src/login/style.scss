@@ -1,13 +1,19 @@
 $prefix: 'leira-auth';
 
-:where(.leira-auth) {
+//Variables
+$border-radius: var(--wp--style--border--radius, var(--wp--custom--border-radius, var(--wp--preset--radius--medium, 4px)));
+$error-color: var(--wp--preset--color--vivid-red, #d63638);
+$success-color: var(--wp--preset--color--vivid-green-cyan, #00a32a);
+
+
+:where(.leira-auth){
 	box-sizing: border-box;
 
 	input:not([type=submit]),
 	textarea {
 		background-color: var(--wp--preset--color--base, #fff);
 		border: 1px solid var(--wp--preset--color--contrast-3, #949494);
-		border-radius: var(--wp--custom--form--border--radius, 4px);
+		border-radius: $border-radius;
 		color: var(--wp--preset--color--contrast, currentColor);
 		font-family: inherit;
 		font-size: 1em;
@@ -98,6 +104,31 @@ $prefix: 'leira-auth';
 	//	}
 	//}
 
+	.leira-form-messages-success {
+		padding: calc(0.667em + 2px);
+		border-radius: $border-radius;
+		border: 1px solid $success-color;
+		color: $success-color;
+		background-color: color-mix(in srgb, $success-color 10%, transparent);
+
+		> :not(:last-of-type) {
+			margin-bottom: .25em;
+		}
+	}
+
+	.leira-form-messages-error {
+		padding: calc(0.667em + 2px);
+		border-radius: $border-radius;
+		border: 1px solid $error-color;
+		color: $error-color;
+		background-color: color-mix(in srgb, $error-color 10%, white);
+		margin-bottom: .25em;
+
+		> :not(:last-of-type) {
+			margin-bottom: .25em;
+		}
+	}
+
 	// Field
 	.leira-auth-field {
 		margin-block-start: 1em;
@@ -125,8 +156,8 @@ $prefix: 'leira-auth';
 			float: left;
 			//margin-top: .2em;
 			margin-left: -1.5em;
-			width: 1em;
-			height: 1em;
+			//width: 1em;
+			//height: 1em;
 		}
 
 		> label,
@@ -137,19 +168,20 @@ $prefix: 'leira-auth';
 
 	// Validation
 	.leira-auth-is-invalid {
-		border-color: red !important; //var(--wp--preset--color--contrast-3, #fff);
+		border-color: $error-color !important;
+		outline-color: $error-color !important;
 	}
 
-
 	.leira-auth-invalid-feedback {
-		color: red; //var(--wp--preset--color--contrast-3, #fff);
+		margin-top: .25rem;
+		color: $error-color !important;
+		font-size: var(--wp--preset--font-size--small, small);
 	}
 
 	// Help
 	.leira-auth-help {
-		//small font size
+		margin-top: .25rem;
+		font-size: var(--wp--preset--font-size--small, small);
 	}
 
 }
-
-

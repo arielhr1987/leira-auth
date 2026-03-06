@@ -118,7 +118,7 @@ class Html{
 	 *
 	 * @return string
 	 */
-	public static function render_element( string $tag, array $attributes = [], string $content = '' ): string {
+	public static function el( string $tag, array $attributes = [], string $content = '' ): string {
 		$tag = trim( strtolower( $tag ) );
 		if ( empty( $tag ) ) {
 			return '';
@@ -149,6 +149,30 @@ class Html{
 		}
 
 		return sprintf( '<%1$s%2$s>%3$s</%1$s>', $tag, $attr, $content );
+	}
+
+	/**
+	 * Render a div element
+	 *
+	 * @param  array  $attributes
+	 * @param  string  $content
+	 *
+	 * @return string
+	 */
+	public static function div( $attributes = [], string $content = '' ): string {
+		return self::el( 'div', $attributes, $content );
+	}
+
+	/**
+	 * Render a label element
+	 *
+	 * @param  array  $attributes
+	 * @param  string  $content
+	 *
+	 * @return string
+	 */
+	public static function label( $attributes = [], string $content = '' ): string {
+		return self::el( 'label', $attributes, $content );
 	}
 
 }

@@ -1,9 +1,43 @@
 /*!**********************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/login/editor.scss ***!
   \**********************************************************************************************************************************************************************************************************************************************/
-.leira-auth-form * {
+.editor-styles-wrapper .leira-auth-form * {
   pointer-events: none;
 }
-.leira-auth-form .leira-auth-form .block-editor-warning * {
+.editor-styles-wrapper .leira-auth-form .block-editor-warning * {
   pointer-events: auto;
+}
+.editor-styles-wrapper :where(.leira-auth) input:not([type=submit]),
+.editor-styles-wrapper :where(.leira-auth) textarea {
+  background-color: var(--wp--preset--color--base, #fff);
+  border: 1px solid var(--wp--preset--color--contrast-3, #949494);
+  border-radius: var(--wp--style--border--radius, var(--wp--custom--border-radius, var(--wp--preset--radius--medium, 4px)));
+  color: var(--wp--preset--color--contrast, currentColor);
+  font-family: inherit;
+  font-size: 1em;
+  line-height: var(--wp--custom--line-height--body, 1.5);
+  box-shadow: none;
+}
+.editor-styles-wrapper :where(.leira-auth) input:where(:not([type=submit]):not([type=checkbox])),
+.editor-styles-wrapper :where(.leira-auth) textarea {
+  padding: calc(0.667em + 2px);
+}
+.editor-styles-wrapper :where(.leira-auth) form input:not([type=submit]):not([type=checkbox]):not([type=hidden]),
+.editor-styles-wrapper :where(.leira-auth) form textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+}
+.editor-styles-wrapper :where(.leira-auth) .leira-auth-is-invalid {
+  border-color: var(--wp--preset--color--vivid-red, #d63638) !important;
+  outline-color: var(--wp--preset--color--vivid-red, #d63638) !important;
+}
+.editor-styles-wrapper :where(.leira-auth) .leira-auth-invalid-feedback {
+  margin-top: 0.25rem;
+  color: var(--wp--preset--color--vivid-red, #d63638) !important;
+  font-size: var(--wp--preset--font-size--small, small);
+}
+.editor-styles-wrapper :where(.leira-auth) .leira-auth-help {
+  margin-top: 0.25rem;
+  font-size: var(--wp--preset--font-size--small, small);
 }

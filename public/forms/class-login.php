@@ -174,19 +174,28 @@ class Login extends Form{
 	 * @return string
 	 */
 	protected function submit_group_class( array $options ): string {
-		$base_class = trim( (string) ( $options['submit_group_class'] ?? 'wp-block-button' ) );
+		$base_class = trim( (string) ( $options['submit_group_class'] ?? 'wp-block-buttons is-layout-flex' ) );
 		if ( '' === $base_class ) {
-			$base_class = 'wp-block-button';
+			$base_class = 'wp-block-buttons is-layout-flex';
 		}
 
-		$alignment       = strtolower( (string) ( $options['submit_alignment'] ?? 'left' ) );
-		$alignment_class = match ( $alignment ) {
-			'center' => 'leira-submit-align-center',
-			'right' => 'leira-submit-align-right',
-			'full' => 'leira-submit-align-full',
-			default => 'leira-submit-align-left',
+		$justification = strtolower( (string) ( $options['submit_justification'] ?? $options['submit_alignment'] ?? 'left' ) );
+		$justification_class = match ( $justification ) {
+			'center' => 'is-content-justification-center',
+			'right' => 'is-content-justification-right',
+			'space-between' => 'is-content-justification-space-between',
+			default => 'is-content-justification-left',
 		};
 
-		return trim( $base_class . ' ' . $alignment_class );
+		$orientation = strtolower( (string) ( $options['submit_orientation'] ?? 'horizontal' ) );
+		$orientation_class = 'vertical' === $orientation ? 'is-vertical' : '';
+
+		$allow_wrap = true;
+		if ( array_key_exists( 'submit_allow_wrap', $options ) ) {
+			$allow_wrap = (bool) $options['submit_allow_wrap'];
+		}
+		$wrap_class = $allow_wrap ? '' : 'is-nowrap';
+
+		return trim( implode( ' ', array_filter( [ $base_class, $justification_class, $orientation_class, $wrap_class ] ) ) );
 	}
 }

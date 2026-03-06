@@ -1,6 +1,6 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
-  "apiVersion": 2,
+  "apiVersion": 3,
   "name": "leira-auth/login",
   "title": "Leira Auth – Login Form",
   "category": "widgets",
@@ -8,7 +8,10 @@
   "description": "Displays a login form with configurable options.",
   "textdomain": "leira-auth",
   "supports": {
+    "html": false,
+    "anchor": true,
     "className": true,
+    "shadow": true,
     "align": [
       "wide",
       "full"
@@ -16,18 +19,60 @@
     "spacing": {
       "margin": true,
       "padding": true,
-      "blockGap": true
+      "blockGap": true,
+      "__experimentalDefaultControls": {
+        "blockGap": true
+      }
+    },
+    "border": {
+      "radius": true,
+      "color": true,
+      "width": true,
+      "style": true,
+      "top": true,
+      "right": true,
+      "bottom": true,
+      "left": true
+    },
+    "__experimentalBorder": {
+      "color": true,
+      "radius": true,
+      "style": true,
+      "width": true,
+      "__experimentalDefaultControls": {
+        "color": true,
+        "radius": true,
+        "style": true,
+        "width": true
+      }
     },
     "color": {
       "text": true,
       "background": true,
-      "link": true
+      "gradients": true,
+      "link": true,
+      "__experimentalDefaultControls": {
+        "background": true
+      }
     },
     "typography": {
       "fontSize": true,
-      "lineHeight": true
-    },
-    "anchor": true
+      "lineHeight": true,
+      "fontFamily": true,
+      "fontWeight": true,
+      "textTransform": true,
+      "textDecoration": true,
+      "letterSpacing": true,
+      "__experimentalFontFamily": true,
+      "__experimentalFontWeight": true,
+      "__experimentalFontStyle": true,
+      "__experimentalTextTransform": true,
+      "__experimentalTextDecoration": true,
+      "__experimentalLetterSpacing": true,
+      "__experimentalDefaultControls": {
+        "fontSize": true
+      }
+    }
   },
   "editorScript": "file:./edit.js",
   "style": [
@@ -82,6 +127,18 @@
     "submit_alignment": {
       "type": "string",
       "default": "left"
+    },
+    "submit_justification": {
+      "type": "string",
+      "default": "left"
+    },
+    "submit_orientation": {
+      "type": "string",
+      "default": "horizontal"
+    },
+    "submit_allow_wrap": {
+      "type": "boolean",
+      "default": true
     },
     "forgot_password_show": {
       "type": "boolean",

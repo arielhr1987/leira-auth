@@ -1,8 +1,13 @@
 import {__} from '@wordpress/i18n';
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
-import {PanelBody, SelectControl, TextControl, ToggleControl} from '@wordpress/components';
+import {
+	PanelBody,
+	TextControl,
+	ToggleControl
+} from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import {registerBlockType} from '@wordpress/blocks';
+import {justifyLeft, justifyRight, justifyCenter, justifyStretch} from '@wordpress/icons';
 import metadata from './block.json';
 
 /**
@@ -107,17 +112,6 @@ registerBlockType(metadata, {
 							placeholder={__('Log in', 'leira-auth')}
 							help={__('The text of the submit button.', 'leira-auth')}
 							onChange={(value) => setAttributes({submit_text: value})}
-						/>
-						<SelectControl
-							label={__('Alignment', 'leira-auth')}
-							value={attributes.submit_alignment || 'left'}
-							options={[
-								{label: __('Left', 'leira-auth'), value: 'left'},
-								{label: __('Center', 'leira-auth'), value: 'center'},
-								{label: __('Right', 'leira-auth'), value: 'right'},
-								{label: __('Full width', 'leira-auth'), value: 'full'},
-							]}
-							onChange={(value) => setAttributes({submit_alignment: value})}
 						/>
 					</PanelBody>
 					<PanelBody title={__('Links', 'leira-auth')} initialOpen={false}>

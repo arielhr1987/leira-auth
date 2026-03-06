@@ -28,32 +28,24 @@ class Submit extends Input{
 	 * @return string
 	 */
 	public function render(): string {
-
-		$attr          = $this->get( 'input_attr', [] );
-		$attr          = is_array( $attr ) ? $attr : [];
+		$attr          = [];
 		$attr['type']  = 'submit';
 		$attr['name']  = $this->get_name();
-		$attr['class'] = Html::merge_classes( '', 'wp-block-button__link wp-element-button' );
+		$attr['class'] = Html::merge_classes( 'wp-block-button__link', wp_theme_get_element_class_name( 'button' ) );
 
 		$label = (string) $this->get( 'label', '' );
-		if ( '' === $label ) {
-			$label = isset( $attr['default'] ) ? (string) $attr['default'] : __( 'Submit', 'leira-auth' );
+		if ( empty( $label ) ) {
+			$label = $attr['default'] ?? __( 'Submit', 'leira-auth' );
 		}
 
-		$group_class = trim( (string) $this->get( 'group_class', 'wp-block-buttons' ) );
-		if ( '' === $group_class ) {
-			$group_class = 'wp-block-buttons';
-		}
+		$group_class = Html::merge_classes( $this->get( 'group_class', '' ), 'wp-block-buttons' );
 
-		return implode(
-			PHP_EOL,
-			[
-				'<div class="leira-auth-field">',
-				'<div class="' . esc_attr( $group_class ) . '">',
-				Html::render_element('button', $attr, esc_html( $label ) ),
-				'</div>',
-				'</div>',
-			]
+		return Html::div( [ 'class' => 'leira-auth-field' ],
+			Html::div( [ 'class' => $group_class ],
+				Html::div( [ 'class' => 'wp-block-button' ],
+					Html::el( 'button', $attr, esc_html( $label ) )
+				)
+			)
 		);
 	}
 }

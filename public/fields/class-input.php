@@ -12,28 +12,6 @@ use Leira_Auth\Public\Html;
 class Input extends Field{
 
 	/**
-	 * Get render priority.
-	 *
-	 * @return int
-	 */
-	public function get_priority(): int {
-		return $this->get( 'priority' );
-	}
-
-	/**
-	 * Set render priority.
-	 *
-	 * @param  int  $priority
-	 *
-	 * @return self
-	 */
-	public function set_priority( int $priority = 10 ): self {
-		$this->set( 'priority', $priority );
-
-		return $this;
-	}
-
-	/**
 	 * Get label text.
 	 *
 	 * @return string
@@ -88,7 +66,7 @@ class Input extends Field{
 			'class' => Html::merge_classes( $this->get( 'group_class', '' ), 'leira-auth-field' )
 		] );
 
-		return Html::render_element(
+		return Html::el(
 			'div',
 			$group_attr,
 			$this->render_label() . Field::render() . $this->render_errors() . $this->render_help()
@@ -113,9 +91,9 @@ class Input extends Field{
 			}
 		}
 		$attr['for']   = $this->get( 'id', $this->get_name() );
-		$attr['class'] = Html::merge_classes( $attr['class'] ?? '', 'leira-auth-form-label' );
+		$attr['class'] = Html::merge_classes( $attr['class'] ?? '', 'leira-auth-label' );
 
-		return Html::render_element( 'label', $attr, esc_html( $label ) );
+		return Html::label( $attr, esc_html( $label ) );
 	}
 
 	/**
@@ -130,7 +108,7 @@ class Input extends Field{
 				'role'  => $error->is_success() ? 'status' : 'alert',
 				'class' => $error->is_success() ? '' : 'leira-auth-invalid-feedback',
 			];
-			$html .= Html::render_element( 'div', $attr, esc_html( $error->text() ) );
+			$html .= Html::el( 'div', $attr, esc_html( $error->text() ) );
 		}
 
 		return $html;
@@ -151,7 +129,7 @@ class Input extends Field{
 			'class' => Html::merge_classes( $this->get( 'help_class', '' ), 'leira-auth-help' )
 		] );
 
-		return Html::render_element( 'div', $attr, esc_html( $help ) );
+		return Html::el( 'div', $attr, esc_html( $help ) );
 	}
 
 }

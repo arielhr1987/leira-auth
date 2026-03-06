@@ -259,12 +259,20 @@ class Form implements Form_Contract{
 			'data-leira-auth-ajax' => $this->is_ajax() ? '1' : null,
 		] );
 
-		$html = '<div ' . get_block_wrapper_attributes() . '>';
+		$block_wrapper_attributes = '';
+		if ( ! is_admin() && ! wp_is_json_request() ) {
+			$block_wrapper_attributes = ' ' . get_block_wrapper_attributes();
+		}
+
+		$html = '<div' . $block_wrapper_attributes . '>';
 		$html .= '<div class="leira-auth">';
 		$html .= '<form ' . Html::render_attributes( $attr ) . '>';
 		$html .= $this->render_messages();
 
 		$fields = [];
+//		usort($this->all_fields(), function ( $a, $b ) {
+//			return $a->get('priority', 10) >= $b->get('priority', 10) ;
+//		});
 		foreach ( $this->all_fields() as $field ) {
 			$fields[] = $field->render();
 		}
@@ -316,7 +324,7 @@ class Form implements Form_Contract{
 				'role'  => $type === Message::SUCCESS ? 'status' : 'alert',
 				'class' => 'leira-form-message leira-form-message--' . $type
 			];
-			$item = Html::render_element( 'div', $attr, esc_html( $message->text() ) );
+			$item = Html::el( 'div', $attr, esc_html( $message->text() ) );
 
 			if ( Message::SUCCESS === $type ) {
 				$success .= $item;
@@ -329,11 +337,11 @@ class Form implements Form_Contract{
 			return '';
 		}
 
-		$html = '<div class="leira-form-messages">';
-		if ( '' !== $success ) {
+		$html = '<div class="leira-auth-field">';
+		if ( ! empty( $success ) ) {
 			$html .= '<div class="leira-form-messages-success">' . $success . '</div>';
 		}
-		if ( '' !== $error ) {
+		if ( ! empty( $error ) ) {
 			$html .= '<div class="leira-form-messages-error">' . $error . '</div>';
 		}
 		$html .= '</div>';
