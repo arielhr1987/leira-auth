@@ -270,10 +270,7 @@ class Form implements Form_Contract{
 		$html .= $this->render_messages();
 
 		$fields = [];
-//		usort($this->all_fields(), function ( $a, $b ) {
-//			return $a->get('priority', 10) >= $b->get('priority', 10) ;
-//		});
-		foreach ( $this->all_fields() as $field ) {
+		foreach ( $this->get_ordered_fields() as $field ) {
 			$fields[] = $field->render();
 		}
 		$fields = apply_filters( 'leira_auth_form_fields_render', $fields, $this );
@@ -349,4 +346,28 @@ class Form implements Form_Contract{
 		return $html;
 	}
 
+	/**
+	 * Return fields ordered by render priority.
+	 *
+	 * @return array<string, Field_Contract>
+	 */
+	protected function get_ordered_fields(): array {
+		$fields = $this->all_fields();
+
+		uasort(
+			$fields,
+			function ( Field_Contract $a, Field_Contract $b ): int {
+				$priority_a = $a->get( 'priority', 10 );
+				$priority_b = $b->get( 'priority', 10 );
+
+				if ( $priority_a === $priority_b ) {
+					return 0;
+				}
+
+				return $priority_a <=> $priority_b;
+			}
+		);
+
+		return $fields;
+	}
 }
