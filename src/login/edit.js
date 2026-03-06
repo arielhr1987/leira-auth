@@ -1,10 +1,6 @@
 import {__} from '@wordpress/i18n';
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
-import {
-	PanelBody,
-	TextControl,
-	ToggleControl
-} from '@wordpress/components';
+import {PanelBody, TextControl, ToggleControl} from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import {registerBlockType} from '@wordpress/blocks';
 import {justifyLeft, justifyRight, justifyCenter, justifyStretch} from '@wordpress/icons';
